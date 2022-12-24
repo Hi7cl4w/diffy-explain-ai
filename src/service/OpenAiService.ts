@@ -6,6 +6,7 @@ import {
   OpenAIApi,
 } from "openai";
 import { CacheService } from "./CacheService";
+import { window } from "vscode";
 
 class OpenAiService implements AIService {
   static _instance: OpenAiService;

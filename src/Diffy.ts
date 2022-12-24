@@ -7,9 +7,9 @@ import BaseDiffy from "./BaseDiffy";
 
 class Diffy extends BaseDiffy {
   static _instance: Diffy;
-  gitService: GitService | null = null;
-  _openAIService: OpenAiService | null = null;
-  workspaceService: WorkspaceService | null = null;
+  private gitService: GitService | null = null;
+  private _openAIService: OpenAiService | null = null;
+  private workspaceService: WorkspaceService | null = null;
   isEnabled: boolean = false;
 
   constructor() {

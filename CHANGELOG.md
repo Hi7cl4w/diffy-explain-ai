@@ -21,3 +21,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Fixed
 
 - Commit Message Generation Improved
+
+## [0.0.8] - 2022-12-24
+
+### Changes
+
+- Suggested Message as Newline Instead of Space

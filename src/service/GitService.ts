@@ -102,7 +102,7 @@ class GitService {
   setCommitMessageToInputBox(repo: Repository, message: string) {
     const previousValue = repo.inputBox.value;
     repo.inputBox.value = previousValue
-      ? previousValue + " " + message
+      ? previousValue + " \n" + message
       : message;
   }
 

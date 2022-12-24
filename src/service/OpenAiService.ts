@@ -36,10 +36,12 @@ class OpenAiService implements AIService {
     code =
       'Read the following git diff for a multiple files:\n\n"""\n' +
       code +
-      '\n\n"""\nGenerate commit messages from this diff without mentioning the changes themselves:\n\n';
+      '\n\n"""\nWrite a commit message where multiple lines if necessary where each line max 50 characters where it describing the changes and reasoning behind the changes:\ngit commit -F- ';
     let response = await this.getFromOpenApi(openAIKey, code);
     let message = String(response.choices[0].text);
     message = message.trim();
+    message = message.replace(/^\"/gm, "");
+    message = message.replace(/\"$/gm, "");
     return message;
   }
 

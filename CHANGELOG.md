@@ -15,3 +15,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Generate Commit Message.
 - Explain Changes in Natural Language.
 - Directly Generate Commit Message to VScode git commit input box. Copy to Clipboard
+
+## [0.0.7] - 2022-12-24
+
+### Fixed
+
+- Commit Message Generation Improved

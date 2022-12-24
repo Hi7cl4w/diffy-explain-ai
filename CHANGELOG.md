@@ -32,7 +32,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Added
 
-- Explain and Preview Changes in Staged Files
+- Explain and Preview Changes of Staged Files
 ### Changes
 
 - Bug Fixes

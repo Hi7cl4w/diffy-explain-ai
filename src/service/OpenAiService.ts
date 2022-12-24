@@ -29,6 +29,12 @@ class OpenAiService implements AIService {
     this.cacheService = new CacheService();
   }
 
+  /**
+   * It takes a git diff as input and returns a commit message as output
+   * @param {string} openAIKey - string - This is the API key for OpenAI.
+   * @param {string} code - The diff of the files that are being committed.
+   * @returns A string
+   */
   async getCommitMessageFromDiff(
     openAIKey: string,
     code: string

@@ -34,8 +34,8 @@ Go to Settings > Diffy - Explains Git Changes > Enter Your Api Key from OpenAI  
 
 ## Commands
 
-* `diffy-explain-ai.generateCommitMessage` : Explain Changes and Copy to Clipboard
-* `diffy-explain-ai.explainDiffClipboard` : Generate Commit Message to Commit Input Box
+* `diffy-explain-ai.generateCommitMessage` : Generate Commit Message to Commit Input Box
+* `diffy-explain-ai.explainDiffClipboard` : Explain Changes and Copy to Clipboard
 * `diffy-explain-ai.generateCommitMessageClipboard` : Generate Commit Message and Copy to Clipboard
 
 ## Support

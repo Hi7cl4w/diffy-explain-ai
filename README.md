@@ -19,7 +19,13 @@
   </a>
 </p>
 
+> Generate Commit &nbsp;
+
 ![screenshot](https://raw.githubusercontent.com/Hi7cl4w/diffy-explain-ai/main/images/generate_commit.gif)
+
+> Explain and Preview Changes in Staged Files &nbsp;
+
+![screenshot](https://raw.githubusercontent.com/Hi7cl4w/diffy-explain-ai/main/images/explain_and_preview.png)
 
 ## Key Features
 
@@ -37,6 +43,7 @@ Go to Settings > Diffy - Explains Git Changes > Enter Your Api Key from OpenAI  
 * `diffy-explain-ai.generateCommitMessage` : Generate Commit Message to Commit Input Box
 * `diffy-explain-ai.explainDiffClipboard` : Explain Changes and Copy to Clipboard
 * `diffy-explain-ai.generateCommitMessageClipboard` : Generate Commit Message and Copy to Clipboard
+* `diffy-explain-ai.explainAndPreview` : Explain and Preview Changes in Staged Files
 
 ## Support
 

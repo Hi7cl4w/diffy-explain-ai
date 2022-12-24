@@ -89,11 +89,21 @@ class OpenAiService implements AIService {
     });
     const openai = new OpenAIApi(configuration);
 
-    const response = await openai.createCompletion(this.openAIConfig);
+    const response = await openai
+      .createCompletion(this.openAIConfig)
+      .then((value) => {
+        return value;
+      })
+      .catch((reason) => {
+        console.log(reason);
+        window.showErrorMessage(
+          "OpenAI Error. Please Check Token is Valid or didn't Exceeded the Rate Limit"
+        );
+      });
 
-    this.cacheService.set(this.openAIConfig.model, prompt, response.data);
+    this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
 
-    return response.data;
+    return response?.data;
   }
 }
 

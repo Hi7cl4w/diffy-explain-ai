@@ -4,6 +4,7 @@ import OpenAiService from "./service/OpenAiService";
 import WorkspaceService from "./service/WorkSpaceService";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
+import WindowService from "./service/WindowService";
 
 class Diffy extends BaseDiffy {
   static _instance: Diffy;
@@ -11,6 +12,7 @@ class Diffy extends BaseDiffy {
   private _openAIService: OpenAiService | null = null;
   private workspaceService: WorkspaceService | null = null;
   isEnabled: boolean = false;
+  private _windowsService: any;
 
   constructor() {
     if (Diffy._instance) {
@@ -48,6 +50,44 @@ class Diffy extends BaseDiffy {
       this._openAIService = new OpenAiService();
     }
     return this._openAIService;
+  }
+
+  getWindowService(): WindowService {
+    if (!this._windowsService) {
+      this._windowsService = new WindowService();
+    }
+    return this._windowsService;
+  }
+
+  async explainAndPreview() {
+    if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
+      return;
+    }
+    if (!this.gitService?.checkAndWarnRepoExist()) {
+      return;
+    }
+    /* Checking if the api key is defined. */
+    const apiKey = this.workspaceService?.getOpenAIKey();
+    if (!apiKey) {
+      return;
+    }
+    /* Getting the current repo. */
+    const repo = this.gitService?.getCurrentRepo();
+    if (!repo) {
+      return;
+    }
+    /* Getting the diff of the current git branch. */
+    const diff = await this.gitService?.getGitDiff(repo);
+    if (!diff) {
+      this.showInformationMessage(`No changes`);
+      return;
+    }
+    /* OpenAPI */
+    const changes = await this.getOpenAPIService().getExplainedChanges(
+      apiKey,
+      diff
+    );
+    this.getWindowService().showExplainedResultWebviewPane(changes);
   }
 
   /**

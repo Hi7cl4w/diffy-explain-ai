@@ -78,6 +78,14 @@
           "dark": "icons/magic.svg",
           "light": "icons/magic-light.svg"
         }
+      },
+      {
+        "command": "diffy-explain-ai.explainAndPreview",
+        "title": "DIFFY: Explain and Preview",
+        "icon": {
+          "dark": "icons/magic.svg",
+          "light": "icons/magic-light.svg"
+        }
       }
     ],
     "configuration": {

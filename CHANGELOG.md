@@ -27,3 +27,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changes
 
 - Suggested Message as Newline Instead of Space
+
+## [0.0.9] - 2022-12-24
+
+### Added
+
+- Explain and Preview Changes of Staged Files
+### Changes
+
+- Bug Fixes

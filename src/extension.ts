@@ -39,6 +39,15 @@ export function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "diffy-explain-ai.explainAndPreview",
+      () => {
+        app?.explainAndPreview();
+      }
+    )
+  );
 }
 
 // This method is called when your extension is deactivated

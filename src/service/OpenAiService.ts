@@ -6,6 +6,7 @@ import {
   OpenAIApi,
 } from "openai";
 import { CacheService } from "./CacheService";
+import { window } from "vscode";
 
 class OpenAiService implements AIService {
   static _instance: OpenAiService;
@@ -14,7 +15,7 @@ class OpenAiService implements AIService {
     model: "text-davinci-003",
     prompt: null,
     temperature: 0.9,
-    max_tokens: 256,
+    max_tokens: 2000,
     top_p: 1.0,
     frequency_penalty: 0.0,
     presence_penalty: 0.0,
@@ -40,11 +41,11 @@ class OpenAiService implements AIService {
     code: string
   ): Promise<string> {
     code =
-      'Read the following git diff for a multiple files:\n\n"""\n' +
+      'Read the following console result of git diff --cached:\n\n"""\n' +
       code +
-      '\n\n"""\nWrite a commit message where multiple lines if necessary where each line max 50 characters where it describing the changes and reasoning behind the changes:\ngit commit -F- ';
+      '\n\n"""\nWrite a commit message in multiple lines where one line without exceeding 50 character based on this diff changes without mentioning itself:\n';
     let response = await this.getFromOpenApi(openAIKey, code);
-    let message = String(response.choices[0].text);
+    let message = String(response?.choices[0].text);
     message = message.trim();
     message = message.replace(/^\"/gm, "");
     message = message.replace(/\"$/gm, "");
@@ -59,11 +60,11 @@ class OpenAiService implements AIService {
    */
   async getExplainedChanges(openAIKey: string, code: string): Promise<string> {
     code =
-      'Read the following git diff for a multiple files:\n\n"""\n' +
+      'Read the following console result of git diff --cached:\n\n"""\n' +
       code +
-      '\n\n"""\nGenerate paragraphs to explain this diff to a human without mentioning the changes themselves:\n\n';
+      '\n\n"""\nGenerate paragraphs to explain this diff changes to a human without mentioning itself:\n\n';
     let response = await this.getFromOpenApi(openAIKey, code);
-    let message = String(response.choices[0].text);
+    let message = String(response?.choices[0].text);
     message = message.trim();
     return message;
   }
@@ -89,11 +90,21 @@ class OpenAiService implements AIService {
     });
     const openai = new OpenAIApi(configuration);
 
-    const response = await openai.createCompletion(this.openAIConfig);
+    const response = await openai
+      .createCompletion(this.openAIConfig)
+      .then((value) => {
+        return value;
+      })
+      .catch((reason) => {
+        console.log(reason);
+        window.showErrorMessage(
+          "OpenAI Error. Please Check Token is Valid or didn't Exceeded the Rate Limit"
+        );
+      });
 
-    this.cacheService.set(this.openAIConfig.model, prompt, response.data);
+    this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
 
-    return response.data;
+    return response?.data;
   }
 }
 

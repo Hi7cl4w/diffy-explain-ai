@@ -12,12 +12,13 @@ export default class WindowService {
   showExplainedResultWebviewPane(explain: string) {
     const content = this.getWebviewContent(explain);
     if (!this.panel) {
-      this.createWebviewPanel(content);
+      this.createWebviewPanel();
     }
-    this.panel?.reveal();
+    this.panel!.webview.html = content;
+    this.panel!.reveal();
   }
 
-  private createWebviewPanel(content: string) {
+  private createWebviewPanel() {
     this.panel = window.createWebviewPanel(
       "ExplainGitDiff",
       "Explain Git Diff",
@@ -27,7 +28,6 @@ export default class WindowService {
         retainContextWhenHidden: true,
       }
     );
-    this.panel.webview.html = content;
   }
 
   private getWebviewContent(explain: string) {

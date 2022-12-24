@@ -36,3 +36,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Changes
 
 - Bug Fixes
+
+## [0.0.10] - 2022-12-24
+### Changes
+
+- Bug Fixes

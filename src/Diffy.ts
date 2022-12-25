@@ -13,7 +13,7 @@ class Diffy extends BaseDiffy {
   private workspaceService: WorkspaceService | null = null;
   isEnabled: boolean = false;
   private _windowsService: any;
-  context: ExtensionContext;
+  context!: ExtensionContext;
 
   constructor(context: ExtensionContext) {
     if (Diffy._instance) {

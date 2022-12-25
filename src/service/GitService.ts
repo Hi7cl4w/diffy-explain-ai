@@ -93,8 +93,8 @@ class GitService {
    * Get the diff in the git repository.
    * @returns The diff object is being returned.
    */
-  async getGitDiff(repo: Repository) {
-    let diff = await repo.diff(true);
+  async getGitDiff(repo: Repository, cached = true) {
+    let diff = await repo.diff(cached);
     return diff;
   }
 

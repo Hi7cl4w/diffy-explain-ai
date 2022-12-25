@@ -6,7 +6,7 @@ import Diffy from "./Diffy";
 let app: Diffy | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
-  app = new Diffy();
+  app = new Diffy(context);
   app.init();
 
   context.subscriptions.push(

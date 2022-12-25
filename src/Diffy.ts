@@ -1,4 +1,4 @@
-import { env } from "vscode";
+import { ExtensionContext, env } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
 import GitService from "./service/GitService";
@@ -13,12 +13,14 @@ class Diffy extends BaseDiffy {
   private workspaceService: WorkspaceService | null = null;
   isEnabled: boolean = false;
   private _windowsService: any;
+  context!: ExtensionContext;
 
-  constructor() {
+  constructor(context: ExtensionContext) {
     if (Diffy._instance) {
       return Diffy._instance;
     }
     super();
+    this.context = context;
   }
 
   /**
@@ -77,9 +79,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */
@@ -113,9 +114,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */
@@ -150,9 +150,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */
@@ -187,9 +186,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */

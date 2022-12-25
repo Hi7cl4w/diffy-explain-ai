@@ -61,6 +61,10 @@ class GitService {
     return true;
   }
 
+  /**
+   * If the repo is not initiated, show an error message
+   * @returns The first repo in the array of repos.
+   */
   getCurrentRepo() {
     const repo = this.vscodeGitApi?.repositories[0];
     if (!repo) {
@@ -85,12 +89,30 @@ class GitService {
     window.showInformationMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 
+  async getDiffAndWarnUser(repo: Repository, cached = true) {
+    const diff = await repo.diff(cached);
+    if (!diff) {
+      if (cached) {
+        const diffUncached = await repo.diff(false);
+        diffUncached
+          ? this.showInformationMessage(
+              "warning: please stage your git changes"
+            )
+          : "No Changes";
+        return null;
+      } else {
+        this.showInformationMessage("No changes");
+      }
+    }
+    return diff;
+  }
+
   /**
    * Get the diff in the git repository.
    * @returns The diff object is being returned.
    */
-  async getGitDiff(repo: Repository) {
-    let diff = await repo.diff(true);
+  async getGitDiff(repo: Repository, cached = true) {
+    const diff = await repo.diff(cached);
     return diff;
   }
 

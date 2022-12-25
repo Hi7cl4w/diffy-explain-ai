@@ -89,12 +89,27 @@ class GitService {
     window.showInformationMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 
+  async getDiffAndWarnUser(repo: Repository, cached = true) {
+    const diff = await repo.diff(cached);
+    if (!diff) {
+      if (cached) {
+        const diffUncached = await repo.diff(false);
+        diffUncached
+          ? this.showInformationMessage(
+              "warning: please stage your git changes"
+            )
+          : "";
+      }
+    }
+    return diff;
+  }
+
   /**
    * Get the diff in the git repository.
    * @returns The diff object is being returned.
    */
   async getGitDiff(repo: Repository, cached = true) {
-    let diff = await repo.diff(cached);
+    const diff = await repo.diff(cached);
     return diff;
   }
 

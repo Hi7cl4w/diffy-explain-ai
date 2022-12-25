@@ -1,4 +1,4 @@
-import { env } from "vscode";
+import { ExtensionContext, env } from "vscode";
 import GitService from "./service/GitService";
 import OpenAiService from "./service/OpenAiService";
 import WorkspaceService from "./service/WorkSpaceService";
@@ -13,12 +13,14 @@ class Diffy extends BaseDiffy {
   private workspaceService: WorkspaceService | null = null;
   isEnabled: boolean = false;
   private _windowsService: any;
+  context: ExtensionContext;
 
-  constructor() {
+  constructor(context: ExtensionContext) {
     if (Diffy._instance) {
       return Diffy._instance;
     }
     super();
+    this.context = context;
   }
 
   /**

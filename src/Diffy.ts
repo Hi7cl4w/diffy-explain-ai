@@ -79,9 +79,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */
@@ -115,9 +114,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */
@@ -152,9 +150,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */
@@ -189,9 +186,8 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getGitDiff(repo);
+    const diff = await this.gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
-      this.showInformationMessage(`No changes`);
       return;
     }
     /* OpenAPI */

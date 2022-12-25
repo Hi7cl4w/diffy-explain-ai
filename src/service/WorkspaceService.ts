@@ -2,9 +2,8 @@ import { WorkspaceFolder, window, workspace } from "vscode";
 import { EventEmitter } from "events";
 import { EventType } from "../@types/EventType";
 import { CONSTANTS } from "../Constants";
-import BaseDiffy from "../BaseDiffy";
 
-class WorkspaceService extends EventEmitter {
+export default class WorkspaceService extends EventEmitter {
   static _instance: WorkspaceService;
 
   constructor() {
@@ -99,5 +98,3 @@ class WorkspaceService extends EventEmitter {
     window.showErrorMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 }
-
-export default WorkspaceService;

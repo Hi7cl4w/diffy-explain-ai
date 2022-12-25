@@ -14,6 +14,10 @@
     <img alt="Visual Studio Marketplace Downloads" src="https://img.shields.io/visual-studio-marketplace/d/hitclaw.diffy-explain-ai?label=Visual%20Studio%20Marketplace">
   </a>
   <a href="#">
+    <img src="https://github.com/Hi7cl4w/diffy-explain-ai/actions/workflows/main.yml/badge.svg"
+         alt="CI">
+  </a>
+  <a href="#">
     <img src="https://img.shields.io/badge/License-MIT-blue"
          alt="visual-studio marketplace">
   </a>

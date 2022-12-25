@@ -9,9 +9,13 @@
 <h4 align="center">Generate Commit Message the changed code using git diff and <a href="https://openai.com/" target="_blank">OpenAI</a> in natural language .</h4>
 <br>
 <p align="center">
+
   <a href="https://marketplace.visualstudio.com/items?itemName=hitclaw.diffy-explain-ai">
-    <img src="https://img.shields.io/visual-studio-marketplace/i/hitclaw.diffy-explain-ai?label=Visual%20Studio%20Marketplace&style=plastic"
-         alt="visual studio marketplace">
+    <img alt="Visual Studio Marketplace Downloads" src="https://img.shields.io/visual-studio-marketplace/d/hitclaw.diffy-explain-ai?label=Visual%20Studio%20Marketplace">
+  </a>
+  <a href="#">
+    <img src="https://github.com/Hi7cl4w/diffy-explain-ai/actions/workflows/main.yml/badge.svg"
+         alt="CI">
   </a>
   <a href="#">
     <img src="https://img.shields.io/badge/License-MIT-blue"

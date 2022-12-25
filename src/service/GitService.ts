@@ -61,6 +61,10 @@ class GitService {
     return true;
   }
 
+  /**
+   * If the repo is not initiated, show an error message
+   * @returns The first repo in the array of repos.
+   */
   getCurrentRepo() {
     const repo = this.vscodeGitApi?.repositories[0];
     if (!repo) {

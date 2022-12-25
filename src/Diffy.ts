@@ -1,10 +1,10 @@
 import { env } from "vscode";
-import GitService from "./service/GitService";
-import OpenAiService from "./service/OpenAiService";
-import WorkspaceService from "./service/WorkSpaceService";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
+import GitService from "./service/GitService";
+import OpenAiService from "./service/OpenAiService";
 import WindowService from "./service/WindowService";
+import WorkspaceService from "./service/WorkspaceService";
 
 class Diffy extends BaseDiffy {
   static _instance: Diffy;

@@ -98,11 +98,10 @@ class GitService {
           ? this.showInformationMessage(
               "warning: please stage your git changes"
             )
-          : "No Changes";
+          : this.showInformationMessage("No Changes");
         return null;
-      } else {
-        this.showInformationMessage("No changes");
       }
+      this.showInformationMessage("No changes");
     }
     return diff;
   }

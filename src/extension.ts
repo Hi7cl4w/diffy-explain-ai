@@ -1,10 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { simpleGit, CheckRepoActions } from "simple-git";
-import { Configuration, CreateCompletionResponse, OpenAIApi } from "openai";
-import { Axios, AxiosResponse } from "axios";
-import { Repository } from "./@types/git";
 import Diffy from "./Diffy";
 
 let app: Diffy | null = null;
@@ -57,3 +53,4 @@ export function deactivate() {
     app = null;
   }
 }
+

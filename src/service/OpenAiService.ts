@@ -7,6 +7,8 @@ import {
 } from "openai";
 import { CacheService } from "./CacheService";
 import { window } from "vscode";
+import { resolveNaptr } from "dns";
+import { AxiosError } from "axios";
 
 class OpenAiService implements AIService {
   static _instance: OpenAiService;
@@ -39,34 +41,42 @@ class OpenAiService implements AIService {
   async getCommitMessageFromDiff(
     openAIKey: string,
     code: string
-  ): Promise<string> {
+  ): Promise<string | null> {
     code =
       'Read the following console result of git diff --cached:\n\n"""\n' +
       code +
       '\n\n"""\nWrite a commit message in multiple lines where one line without exceeding 50 character based on this diff changes without mentioning itself:\n';
     let response = await this.getFromOpenApi(openAIKey, code);
-    let message = String(response?.choices[0].text);
-    message = message.trim();
-    message = message.replace(/^\"/gm, "");
-    message = message.replace(/\"$/gm, "");
-    return message;
+    if (response) {
+      let message = String(response?.choices[0].text);
+      message = message.trim();
+      message = message.replace(/^\"/gm, "");
+      message = message.replace(/\"$/gm, "");
+      return message;
+    }
+    return null;
   }
 
   /**
    * It takes a string of code, sends it to a server, gets a response, and returns a string of the
    * response.
    * @param {string} code - the git diff you want to get the explanation for
-   * @returns {Promise<string>} The explanation of the git diff.
+   * @returns The explanation of the git diff.
    */
-  async getExplainedChanges(openAIKey: string, code: string): Promise<string> {
+  async getExplainedChanges(openAIKey: string, code: string) {
     code =
       'Read the following console result of git diff --cached:\n\n"""\n' +
       code +
       '\n\n"""\nGenerate paragraphs to explain this diff changes to a human without mentioning itself:\n\n';
     let response = await this.getFromOpenApi(openAIKey, code);
-    let message = String(response?.choices[0].text);
-    message = message.trim();
-    return message;
+    if (response) {
+      let message = String(response?.choices[0].text);
+      message = message.trim();
+      message = message.replace(/^\"/gm, "");
+      message = message.replace(/\"$/gm, "");
+      return message;
+    }
+    return null;
   }
 
   /**
@@ -97,18 +107,18 @@ class OpenAiService implements AIService {
       })
       .catch((reason: AxiosError) => {
         if (reason.response?.statusText) {
-        window.showErrorMessage(
+          window.showErrorMessage(
             `OpenAI Error: ${reason.response?.statusText}`
-        );
+          );
         } else {
           window.showErrorMessage(`OpenAI Error`);
         }
       });
 
     if (response && response?.data) {
-    this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
+      this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
 
-    return response?.data;
+      return response?.data;
     }
     return null;
   }

@@ -95,16 +95,22 @@ class OpenAiService implements AIService {
       .then((value) => {
         return value;
       })
-      .catch((reason) => {
-        console.log(reason);
+      .catch((reason: AxiosError) => {
+        if (reason.response?.statusText) {
         window.showErrorMessage(
-          "OpenAI Error. Please Check Token is Valid or didn't Exceeded the Rate Limit"
+            `OpenAI Error: ${reason.response?.statusText}`
         );
+        } else {
+          window.showErrorMessage(`OpenAI Error`);
+        }
       });
 
+    if (response && response?.data) {
     this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
 
     return response?.data;
+    }
+    return null;
   }
 }
 

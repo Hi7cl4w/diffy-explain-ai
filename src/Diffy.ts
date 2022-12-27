@@ -88,7 +88,9 @@ class Diffy extends BaseDiffy {
       apiKey,
       diff
     );
-    this.getWindowService().showExplainedResultWebviewPane(changes);
+    if (changes) {
+      this.getWindowService().showExplainedResultWebviewPane(changes);
+    }
   }
 
   /**
@@ -124,8 +126,10 @@ class Diffy extends BaseDiffy {
       diff
     );
     /* Copying the changes to the clipboard and showing the changes in the message box. */
-    env.clipboard.writeText(changes);
-    this.showInformationMessage(changes);
+    if (changes) {
+      env.clipboard.writeText(changes);
+      this.showInformationMessage(changes);
+    }
   }
 
   /**
@@ -159,8 +163,10 @@ class Diffy extends BaseDiffy {
       apiKey,
       diff
     );
-    env.clipboard.writeText(changes);
-    this.showInformationMessage(changes);
+    if (changes) {
+      env.clipboard.writeText(changes);
+      this.showInformationMessage(changes);
+    }
   }
 
   /**
@@ -195,8 +201,10 @@ class Diffy extends BaseDiffy {
       apiKey,
       diff
     );
-    /* Setting the commit message to the input box. */
-    this.gitService?.setCommitMessageToInputBox(repo, changes);
+    if (changes) {
+      /* Setting the commit message to the input box. */
+      this.gitService?.setCommitMessageToInputBox(repo, changes);
+    }
   }
 
   /**

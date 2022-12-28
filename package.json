@@ -2,7 +2,7 @@
   "name": "diffy-explain-ai",
   "displayName": "DIFFY - Explains or Generate Your Commit",
   "description": "Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "publisher": "hitclaw",
   "engines": {
     "vscode": "^1.74.0"

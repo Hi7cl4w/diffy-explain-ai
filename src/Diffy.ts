@@ -8,7 +8,7 @@ import WorkspaceService from "./service/WorkspaceService";
 
 class Diffy extends BaseDiffy {
   static _instance: Diffy;
-  private gitService: GitService | null = null;
+  private _gitService: GitService | null = null;
   private _openAIService: OpenAiService | null = null;
   private workspaceService: WorkspaceService | null = null;
   isEnabled: boolean = false;
@@ -23,11 +23,12 @@ class Diffy extends BaseDiffy {
     this.context = context;
   }
 
+  private getSimpleGit() {}
+
   /**
    * Initiate all objects
    */
   init() {
-    this.gitService = new GitService();
     this.workspaceService = new WorkspaceService();
     this.workspaceService.on(EventType.WORKSPACE_CHANGED, () => {
       this.onWorkSpaceChanged();
@@ -35,11 +36,26 @@ class Diffy extends BaseDiffy {
     this.isEnabled = true;
   }
 
+  getGitService() {
+    if (!this._gitService) {
+      const dir = this.workspaceService?.getCurrentWorkspaceUri();
+      if (dir) {
+        this._gitService = new GitService(dir);
+      } else {
+        this.showInformationMessage("You are not in a workspace");
+      }
+    }
+    return this._gitService;
+  }
+
   /**
    * When the workspace changes, re-initialize the git service.
    */
   onWorkSpaceChanged() {
-    this.gitService?.init();
+    const dir = this.workspaceService?.getCurrentWorkspaceUri();
+    if (dir) {
+      this.getGitService()?.setCurrentDir(dir);
+    }
   }
 
   /**
@@ -65,7 +81,7 @@ class Diffy extends BaseDiffy {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
       return;
     }
-    if (!this.gitService?.checkAndWarnRepoExist()) {
+    if (!this._gitService?.checkAndWarnRepoExist()) {
       return;
     }
     /* Checking if the api key is defined. */
@@ -74,12 +90,12 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the current repo. */
-    const repo = this.gitService?.getCurrentRepo();
+    const repo = this._gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getDiffAndWarnUser(repo);
+    const diff = await this._gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
       return;
     }
@@ -102,7 +118,7 @@ class Diffy extends BaseDiffy {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
       return;
     }
-    if (!this.gitService?.checkAndWarnRepoExist()) {
+    if (!this._gitService?.checkAndWarnRepoExist()) {
       return;
     }
     /* Checking if the api key is defined. */
@@ -111,12 +127,12 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the current repo. */
-    const repo = this.gitService?.getCurrentRepo();
+    const repo = this._gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getDiffAndWarnUser(repo);
+    const diff = await this._gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
       return;
     }
@@ -140,7 +156,7 @@ class Diffy extends BaseDiffy {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
       return;
     }
-    if (!this.gitService?.checkAndWarnRepoExist()) {
+    if (!this._gitService?.checkAndWarnRepoExist()) {
       return;
     }
     /* Checking if the api key is defined. */
@@ -149,12 +165,12 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the current repo. */
-    const repo = this.gitService?.getCurrentRepo();
+    const repo = this._gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getDiffAndWarnUser(repo);
+    const diff = await this._gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
       return;
     }
@@ -178,7 +194,7 @@ class Diffy extends BaseDiffy {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
       return;
     }
-    if (!this.gitService?.checkAndWarnRepoExist()) {
+    if (!this._gitService?.checkAndWarnRepoExist()) {
       return;
     }
     /* Checking if the api key is defined. */
@@ -187,24 +203,27 @@ class Diffy extends BaseDiffy {
       return;
     }
     /* Getting the current repo. */
-    const repo = this.gitService?.getCurrentRepo();
+    const repo = this._gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    const diff = await this.gitService?.getDiffAndWarnUser(repo);
+    const diff = await this._gitService?.getDiffAndWarnUser(repo);
     if (!diff) {
       return;
     }
-    /* OpenAPI */
-    const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-      apiKey,
-      diff
-    );
-    if (changes) {
-      /* Setting the commit message to the input box. */
-      this.gitService?.setCommitMessageToInputBox(repo, changes);
-    }
+
+    // TODO: remove this
+    return;
+    // /* OpenAPI */
+    // const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+    //   apiKey,
+    //   diff
+    // );
+    // if (changes) {
+    //   /* Setting the commit message to the input box. */
+    //   this.gitService?.setCommitMessageToInputBox(repo, changes);
+    // }
   }
 
   /**
@@ -212,7 +231,7 @@ class Diffy extends BaseDiffy {
    */
   dispose() {
     this.isEnabled = false;
-    this.gitService = null;
+    this._gitService = null;
     this._openAIService = null;
     this.workspaceService = null;
   }

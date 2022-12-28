@@ -2,16 +2,23 @@ import { window, Extension, extensions } from "vscode";
 
 import { API as GitApi, GitExtension, Repository } from "../@types/git";
 import { CONSTANTS } from "../Constants";
+import { simpleGit } from "simple-git";
 
 class GitService {
   static _instance: GitService;
   isEnabled: boolean = false;
   vscodeGitApi: GitApi | null = null;
-
-  constructor() {
+  currentDir!: string | undefined | null;
+  /**
+   * constructor
+   * @param {string} workspaceUri - url of current workspace
+   * @returns The instance of the class.
+   */
+  constructor(workSpaceUri: string | undefined | null) {
     if (GitService._instance) {
       return GitService._instance;
     }
+    this.currentDir = workSpaceUri;
     this.initGitApi();
   }
 
@@ -22,11 +29,14 @@ class GitService {
     this.initGitApi();
   }
 
-  /**
-   * Reload all
-   */
-  async reload() {
-    this.initGitApi();
+  setCurrentDir(workSpaceUri: string | undefined | null) {
+    this.currentDir = workSpaceUri;
+  }
+
+  private getSimpleGit() {
+    if (this.currentDir) {
+      return simpleGit(this.currentDir);
+    }
   }
 
   /**
@@ -91,6 +101,8 @@ class GitService {
 
   async getDiffAndWarnUser(repo: Repository, cached = true) {
     const diff = await repo.diff(cached);
+    const head = await repo.status();
+    console.log(head);
     if (!diff) {
       if (cached) {
         const diffUncached = await repo.diff(false);

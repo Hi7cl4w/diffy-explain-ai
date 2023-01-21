@@ -17,7 +17,7 @@ class OpenAiService implements AIService {
     model: "text-davinci-003",
     prompt: null,
     temperature: 0.9,
-    max_tokens: 2000,
+    max_tokens: 3600,
     top_p: 1.0,
     frequency_penalty: 0.0,
     presence_penalty: 0.0,
@@ -45,7 +45,7 @@ class OpenAiService implements AIService {
     code =
       'Read the following console result of git diff --cached:\n\n"""\n' +
       code +
-      '\n\n"""\nWrite a commit message in multiple lines where one line without exceeding 50 character based on this diff changes without mentioning itself:\n';
+      '\n\n"""\nWrite a commit message in multiple lines where first line without exceeding 50 character based on this diff changes without mentioning itself:\n';
     let response = await this.getFromOpenApi(openAIKey, code);
     if (response) {
       let message = String(response?.choices[0].text);

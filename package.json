@@ -2,10 +2,10 @@
   "name": "diffy-explain-ai",
   "displayName": "DIFFY - Explains or Generate Your Commit",
   "description": "Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "publisher": "hitclaw",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.72.0"
   },
   "categories": [
     "SCM Providers"

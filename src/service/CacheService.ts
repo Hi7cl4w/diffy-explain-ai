@@ -13,6 +13,17 @@ export class CacheService {
     return this;
   }
 
+  /**
+     * Returns the singleton instance of the class
+     * @returns {CacheService} The instance of the class.
+     */
+  public static getInstance(): CacheService {
+    if (!CacheService._instance) {
+      CacheService._instance = new CacheService();
+    }
+    return CacheService._instance;
+  }
+
   /* A method that takes in a entity and data. It then checks if the record exists and if it
   doesn't it pushes it to the cache. */
   public set = (entity: string, data: any, result: any): void => {

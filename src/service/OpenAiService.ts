@@ -24,7 +24,7 @@ class OpenAiService implements AIService {
     model: "text-davinci-003",
     prompt: null,
     temperature: 0.9,
-    max_tokens: 3600,
+    max_tokens: 2000,
     top_p: 1.0,
     frequency_penalty: 0.0,
     presence_penalty: 0.0,
@@ -36,7 +36,7 @@ class OpenAiService implements AIService {
     if (OpenAiService._instance) {
       return OpenAiService._instance;
     }
-    this.cacheService = new CacheService();
+    this.cacheService = CacheService.getInstance();
   }
 
   /**
@@ -55,7 +55,7 @@ class OpenAiService implements AIService {
       gitCmd = "git diff --cached --name-status"
     }
     code =
-      'Write a commit message in multiple lines where first line without exceeding 50 character based on this diff changes without mentioning itself from following console result of ' + gitCmd + ':\n\n' +
+      'Write a commit message in multiple lines where first line doesn\'t exceeds \'50\' characters by following commit message guidelines based on this diff changes without mentioning itself from following result of ' + gitCmd + ':\n\n' +
       code +
       '\n\n';
     console.log("code: " + code)

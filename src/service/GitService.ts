@@ -2,6 +2,7 @@ import { window, Extension, extensions } from "vscode";
 
 import { API as GitApi, GitExtension, Repository } from "../@types/git";
 import { CONSTANTS } from "../Constants";
+import simpleGit from 'simple-git';
 
 class GitService {
   static _instance: GitService;
@@ -89,15 +90,15 @@ class GitService {
     window.showInformationMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 
-  async getDiffAndWarnUser(repo: Repository, cached = true) {
-    const diff = await repo.diff(cached);
+  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean) {
+    const diff = await this.getGitDiff(repo, cached, nameOnly);
     if (!diff) {
       if (cached) {
         const diffUncached = await repo.diff(false);
         diffUncached
           ? this.showInformationMessage(
-              "warning: please stage your git changes"
-            )
+            "warning: please stage your git changes"
+          )
           : this.showInformationMessage("No Changes");
         return null;
       }
@@ -110,8 +111,24 @@ class GitService {
    * Get the diff in the git repository.
    * @returns The diff object is being returned.
    */
-  async getGitDiff(repo: Repository, cached = true) {
-    const diff = await repo.diff(cached);
+  async getGitDiff(repo: Repository, cachedInput = true, nameOnly?: boolean) {
+    // let diff = await repo.diff(cached);
+    const git = simpleGit(repo.rootUri.fsPath);
+    let diff: string | null = ""
+    if (!nameOnly) {
+      diff = await git.diff(['--cached']).catch((error) => {
+        this.showErrorMessage("git repository not found");
+        console.error(error)
+        return null
+      })
+    }
+    else {
+      diff = await git.diff(['--cached', '--name-status']).catch((error) => {
+        this.showErrorMessage("git repository not found");
+        console.error(error)
+        return null
+      })
+    }
     return diff;
   }
 
@@ -143,7 +160,7 @@ class GitService {
 
         return gitExtension.getAPI(1);
       }
-    } catch {}
+    } catch { }
 
     return undefined;
   }

@@ -9,6 +9,13 @@ import { CacheService } from "./CacheService";
 import { window } from "vscode";
 import { resolveNaptr } from "dns";
 import { AxiosError } from "axios";
+export interface OpenAIResponse {
+  error?: Error;
+}
+
+export interface Error {
+  message?: string;
+}
 
 class OpenAiService implements AIService {
   static _instance: OpenAiService;
@@ -22,7 +29,7 @@ class OpenAiService implements AIService {
     frequency_penalty: 0.0,
     presence_penalty: 0.0,
     best_of: 1,
-    stop: ['"""'],
+    // stop: ['"""'],
   };
 
   constructor() {
@@ -40,12 +47,19 @@ class OpenAiService implements AIService {
    */
   async getCommitMessageFromDiff(
     openAIKey: string,
-    code: string
+    code: string,
+    nameOnly?: boolean
   ): Promise<string | null> {
+    let gitCmd = "git diff --cached"
+    if (nameOnly) {
+      gitCmd = "git diff --cached --name-status"
+    }
     code =
-      'Read the following console result of git diff --cached:\n\n"""\n' +
+      'Write a commit message in multiple lines where first line without exceeding 50 character based on this diff changes without mentioning itself from following console result of ' + gitCmd + ':\n\n' +
       code +
-      '\n\n"""\nWrite a commit message in multiple lines where first line without exceeding 50 character based on this diff changes without mentioning itself:\n';
+      '\n\n';
+    console.log("code: " + code)
+    console.log("Length: " + code.length)
     let response = await this.getFromOpenApi(openAIKey, code);
     if (response) {
       let message = String(response?.choices[0].text);
@@ -63,9 +77,13 @@ class OpenAiService implements AIService {
    * @param {string} code - the git diff you want to get the explanation for
    * @returns The explanation of the git diff.
    */
-  async getExplainedChanges(openAIKey: string, code: string) {
+  async getExplainedChanges(openAIKey: string, code: string, nameOnly?: boolean) {
+    let gitCmd = "git diff --cached"
+    if (nameOnly) {
+      gitCmd = "git diff --cached --name-status"
+    }
     code =
-      'Read the following console result of git diff --cached:\n\n"""\n' +
+      'Generate paragraphs to explain this diff changes to a human without mentioning itself from the following console result of ' + gitCmd + ':\n\n"""\n' +
       code +
       '\n\n"""\nGenerate paragraphs to explain this diff changes to a human without mentioning itself:\n\n';
     let response = await this.getFromOpenApi(openAIKey, code);
@@ -105,10 +123,11 @@ class OpenAiService implements AIService {
       .then((value) => {
         return value;
       })
-      .catch((reason: AxiosError) => {
+      .catch((reason: AxiosError<OpenAIResponse>) => {
+        console.error(reason.response)
         if (reason.response?.statusText) {
           window.showErrorMessage(
-            `OpenAI Error: ${reason.response?.statusText}`
+            `OpenAI Error: ${reason.response?.data.error?.message || reason.response.statusText} `
           );
         } else {
           window.showErrorMessage(`OpenAI Error`);

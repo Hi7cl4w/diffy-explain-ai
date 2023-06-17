@@ -34,6 +34,10 @@ class GitService {
     this.initGitApi();
   }
 
+  constructor() {
+    this.initGitApi();
+  }
+
   /**
    * init Vscode GitApi
    * @returns {Promise<void>}

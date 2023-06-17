@@ -32,6 +32,13 @@ class OpenAiService implements AIService {
     // stop: ['"""'],
   };
 
+  constructor() {
+    if (OpenAiService._instance) {
+      return OpenAiService._instance;
+    }
+    this.cacheService = CacheService.getInstance();
+  }
+
   /**
    * returns instance of the class
    * @returns {OpenAiService} The instance of the class.
@@ -156,18 +163,20 @@ class OpenAiService implements AIService {
               window.showInformationMessage(
                 "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server."
               );
-              return await this.proxyRequest(this.openAIConfig);
+              return this.proxyRequest(this.openAIConfig);
             }
           }
         });
       if (response && response?.data) {
         this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
+        console.log(response?.data);
 
         return response?.data;
       }
       return undefined;
     } else {
       const response = await this.proxyRequest(this.openAIConfig);
+      console.log(response?.data);
       return response?.data;
     }
   }
@@ -176,6 +185,7 @@ class OpenAiService implements AIService {
     openAIConfig: CreateCompletionRequest
   ): Promise<AxiosResponse<CreateCompletionResponse, any> | null> {
     let data = JSON.stringify(openAIConfig);
+    console.log(data);
 
     let config = {
       method: "post",

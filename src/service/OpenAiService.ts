@@ -141,11 +141,6 @@ class OpenAiService implements AIService {
         })
         .catch(async (reason: AxiosError<OpenAIErrorResponse>) => {
           console.error(reason.response);
-          if (reason?.response?.status) {
-            if (reason?.response?.status === 429) {
-              return await this.proxyRequest(this.openAIConfig);
-            }
-          }
           if (reason.response?.statusText) {
             window.showErrorMessage(
               `OpenAI Error: ${
@@ -155,6 +150,14 @@ class OpenAiService implements AIService {
             );
           } else {
             window.showErrorMessage(`OpenAI Error`);
+          }
+          if (reason?.response?.status) {
+            if (reason?.response?.status === 429) {
+              window.showInformationMessage(
+                "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server."
+              );
+              return await this.proxyRequest(this.openAIConfig);
+            }
           }
         });
       if (response && response?.data) {

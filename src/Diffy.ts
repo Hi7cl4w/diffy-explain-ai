@@ -28,7 +28,7 @@ class Diffy extends BaseDiffy {
    */
   init() {
     this.gitService = GitService.getInstance();
-    this.workspaceService = WorkspaceService.getInstance();
+    this.workspaceService = new WorkspaceService();
     this.workspaceService.on(EventType.WORKSPACE_CHANGED, () => {
       this.onWorkSpaceChanged();
     });

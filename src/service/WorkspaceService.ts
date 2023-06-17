@@ -23,6 +23,17 @@ export default class WorkspaceService extends EventEmitter {
   }
 
   /**
+   * returns instance of the class
+   * @returns {WorkspaceService} The instance of the class.
+   */
+  public static getInstance(): WorkspaceService {
+    if (!WorkspaceService._instance) {
+      WorkspaceService._instance = new WorkspaceService();
+    }
+    return WorkspaceService._instance;
+  }
+
+  /**
    * If there are no workspace folders, or the number of workspace folders is 0, return false.
    * Otherwise, return true.
    * @returns A boolean value.
@@ -81,12 +92,12 @@ export default class WorkspaceService extends EventEmitter {
 
   getOpenAIKey() {
     const openAiKey: string = String(this.getConfiguration().get("openAiKey"));
-    if (!openAiKey) {
-      this.showErrorMessage(
-        "Please Enter Your OpenAi Api Key in Settings.\nVisit The Openai Website to Generate Key"
-      );
-      return null;
-    }
+    // if (!openAiKey) {
+    //   this.showErrorMessage(
+    //     "Please Enter Your OpenAi Api Key in Settings.\nVisit The Openai Website to Generate Key"
+    //   );
+    //   return null;
+    // }
     return openAiKey;
   }
 

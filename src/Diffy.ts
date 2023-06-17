@@ -27,8 +27,8 @@ class Diffy extends BaseDiffy {
    * Initiate all objects
    */
   init() {
-    this.gitService = new GitService();
-    this.workspaceService = new WorkspaceService();
+    this.gitService = GitService.getInstance();
+    this.workspaceService = WorkspaceService.getInstance();
     this.workspaceService.on(EventType.WORKSPACE_CHANGED, () => {
       this.onWorkSpaceChanged();
     });
@@ -49,14 +49,14 @@ class Diffy extends BaseDiffy {
    */
   getOpenAPIService(): OpenAiService {
     if (!this._openAIService) {
-      this._openAIService = new OpenAiService();
+      this._openAIService = OpenAiService.getInstance();
     }
     return this._openAIService;
   }
 
   getWindowService(): WindowService {
     if (!this._windowsService) {
-      this._windowsService = new WindowService();
+      this._windowsService = WindowService.getInstance();
     }
     return this._windowsService;
   }
@@ -70,22 +70,22 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
-    }
+    // if (!apiKey) {
+    //   return;
+    // }
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    let nameOnly = false
+    let nameOnly = false;
     let diff = await this.gitService?.getDiffAndWarnUser(repo, nameOnly);
     if (!diff) {
       return;
     }
     if (diff && diff.length >= 2100) {
-      nameOnly = true
+      nameOnly = true;
       diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
     }
     if (!diff) {
@@ -93,8 +93,9 @@ class Diffy extends BaseDiffy {
     }
     /* OpenAPI */
     const changes = await this.getOpenAPIService().getExplainedChanges(
+      diff,
       apiKey,
-      diff, nameOnly
+      nameOnly
     );
     if (changes) {
       this.getWindowService().showExplainedResultWebviewPane(changes);
@@ -115,22 +116,22 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
-    }
+    // if (!apiKey) {
+    //   return;
+    // }
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    let nameOnly = false
+    let nameOnly = false;
     let diff = await this.gitService?.getDiffAndWarnUser(repo, nameOnly);
     if (!diff) {
       return;
     }
     if (diff && diff.length >= 2100) {
-      nameOnly = true
+      nameOnly = true;
       diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
     }
     if (!diff) {
@@ -138,8 +139,9 @@ class Diffy extends BaseDiffy {
     }
     /* OpenAPI */
     const changes = await this.getOpenAPIService().getExplainedChanges(
+      diff,
       apiKey,
-      diff, nameOnly
+      nameOnly
     );
     /* Copying the changes to the clipboard and showing the changes in the message box. */
     if (changes) {
@@ -161,22 +163,20 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
-    }
+
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    let nameOnly = false
+    let nameOnly = false;
     let diff = await this.gitService?.getDiffAndWarnUser(repo, nameOnly);
     if (!diff) {
       return;
     }
     if (diff && diff.length >= 2100) {
-      nameOnly = true
+      nameOnly = true;
       diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
     }
     if (!diff) {
@@ -184,8 +184,8 @@ class Diffy extends BaseDiffy {
     }
     /* OpenAPI */
     const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-      apiKey,
       diff,
+      apiKey,
       nameOnly
     );
     if (changes) {
@@ -208,22 +208,20 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
-    }
+
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
       return;
     }
     /* Getting the diff of the current git branch. */
-    let nameOnly = false
+    let nameOnly = false;
     let diff = await this.gitService?.getDiffAndWarnUser(repo, nameOnly);
     if (!diff) {
       return;
     }
     if (diff && diff.length >= 2100) {
-      nameOnly = true
+      nameOnly = true;
       diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
     }
     if (!diff) {
@@ -231,8 +229,9 @@ class Diffy extends BaseDiffy {
     }
     /* OpenAPI */
     const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+      diff,
       apiKey,
-      diff, nameOnly
+      nameOnly
     );
     if (changes) {
       /* Setting the commit message to the input box. */

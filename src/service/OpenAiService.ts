@@ -9,6 +9,7 @@ import { CacheService } from "./CacheService";
 import { window } from "vscode";
 import { resolveNaptr } from "dns";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import WorkspaceService from "./WorkspaceService";
 export interface OpenAIErrorResponse {
   error?: Error;
 }
@@ -21,7 +22,7 @@ class OpenAiService implements AIService {
   static _instance: OpenAiService;
   cacheService!: CacheService;
   openAIConfig: CreateCompletionRequest = {
-    model: "text-davinci-003",
+    model: WorkspaceService.getInstance().getGptModel(),
     prompt: null,
     temperature: 0.9,
     max_tokens: 2000,
@@ -127,6 +128,8 @@ class OpenAiService implements AIService {
     openAIKey?: string
   ): Promise<CreateCompletionResponse | undefined> {
     this.openAIConfig.prompt = prompt;
+    this.openAIConfig.model = WorkspaceService.getInstance().getGptModel();
+    console.log(this.openAIConfig.model);
     const exist = this.cacheService.recordExists(
       this.openAIConfig.model,
       prompt

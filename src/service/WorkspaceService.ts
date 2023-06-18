@@ -101,6 +101,11 @@ export default class WorkspaceService extends EventEmitter {
     return openAiKey;
   }
 
+  getGptModel() {
+    const openAiKey: string = String(this.getConfiguration().get("model"));
+    return openAiKey;
+  }
+
   /**
    * This function shows an error message
    * @param {string} msg - The message to display.

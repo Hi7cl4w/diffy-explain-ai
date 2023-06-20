@@ -22,21 +22,21 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "diffy-explain-ai.generateCommitMessage",
       async () => {
-        vscode.window.withScmProgress(async (progress) => {
-          await new Promise((f) => setTimeout(f, 1000));
-        });
         vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
             cancellable: false,
-            title: "Generating commit message...",
+            title: "Generating...\n",
           },
           async (progress) => {
             progress.report({ increment: 0 });
 
-            await app?.generateCommitMessageToSCM();
+            await app?.generateCommitMessageToSCM(progress);
 
-            progress.report({ increment: 100 });
+            progress.report({
+              message: "Commit message generated.",
+              increment: 100,
+            });
           }
         );
       }

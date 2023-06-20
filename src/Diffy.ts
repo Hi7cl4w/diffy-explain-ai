@@ -1,3 +1,4 @@
+import * as vscode from "vscode";
 import { ExtensionContext, env } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
@@ -199,7 +200,12 @@ class Diffy extends BaseDiffy {
    * message to the input box
    * @returns a promise.
    */
-  async generateCommitMessageToSCM() {
+  async generateCommitMessageToSCM(
+    progress?: vscode.Progress<{
+      message?: string | undefined;
+      increment?: number | undefined;
+    }>
+  ) {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
       return;
     }
@@ -231,7 +237,8 @@ class Diffy extends BaseDiffy {
     const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
       diff,
       apiKey,
-      nameOnly
+      nameOnly,
+      progress
     );
     if (changes) {
       /* Setting the commit message to the input box. */

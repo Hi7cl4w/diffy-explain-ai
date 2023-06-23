@@ -2,7 +2,7 @@
   <br> <a href="https://marketplace.visualstudio.com/items?itemName=hitclaw.diffy-explain-ai">
   <img src="https://raw.githubusercontent.com/Hi7cl4w/diffy-explain-ai/main/icons/icon_512.png" alt="DIFFY" width="200"></a>
   <br>
-  DIFFY - Generate Your Commit Message or Explains the changes 
+  DIFFY - Generate Your Commit Message or Explains The Changes 
   <br>
 </h1>
 

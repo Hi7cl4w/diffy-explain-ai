@@ -3,10 +3,15 @@ import { ViewColumn, WebviewPanel, window } from "vscode";
 export default class WindowService {
   static _instance: WindowService;
   panel?: WebviewPanel;
-  constructor() {
-    if (WindowService._instance) {
-      return WindowService._instance;
+  /**
+   * returns instance of the class
+   * @returns {WindowService} The instance of the class.
+   */
+  public static getInstance(): WindowService {
+    if (!WindowService._instance) {
+      WindowService._instance = new WindowService();
     }
+    return WindowService._instance;
   }
 
   showExplainedResultWebviewPane(explain: string) {

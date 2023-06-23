@@ -2,7 +2,7 @@
   <br> <a href="https://marketplace.visualstudio.com/items?itemName=hitclaw.diffy-explain-ai">
   <img src="https://raw.githubusercontent.com/Hi7cl4w/diffy-explain-ai/main/icons/icon_512.png" alt="DIFFY" width="200"></a>
   <br>
-  DIFFY - Explains or Generate Your Commit
+  DIFFY - Generate Your Commit Message or Explains the changes 
   <br>
 </h1>
 
@@ -33,21 +33,21 @@
 
 ## Key Features
 
-* Generate Commit Message.
-* Explain Changes in Natural Language.
-* Directly Generate Commit Message to VScode git commit input box.
-* Copy to clipboard
+- Generate Commit Message.
+- Explain Changes in Natural Language.
+- Directly Generate Commit Message to VScode git commit input box.
+- Copy to clipboard
 
 ## Configure
 
-Go to Settings > Diffy - Explains Git Changes > Enter Your Api Key from OpenAI   [Go to API Key Page](https://beta.openai.com/account/api-keys)
+Go to Settings > Diffy - Explains Git Changes > Enter Your Api Key from OpenAI [Go to API Key Page](https://beta.openai.com/account/api-keys)
 
 ## Commands
 
-* `diffy-explain-ai.generateCommitMessage` : Generate Commit Message to Commit Input Box
-* `diffy-explain-ai.explainDiffClipboard` : Explain Changes and Copy to Clipboard
-* `diffy-explain-ai.generateCommitMessageClipboard` : Generate Commit Message and Copy to Clipboard
-* `diffy-explain-ai.explainAndPreview` : Explain and Preview Changes of Staged Files
+- `diffy-explain-ai.generateCommitMessage` : Generate Commit Message to Commit Input Box
+- `diffy-explain-ai.explainDiffClipboard` : Explain Changes and Copy to Clipboard
+- `diffy-explain-ai.generateCommitMessageClipboard` : Generate Commit Message and Copy to Clipboard
+- `diffy-explain-ai.explainAndPreview` : Explain and Preview Changes of Staged Files
 
 ## Support
 

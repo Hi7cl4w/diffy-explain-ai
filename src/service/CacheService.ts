@@ -4,19 +4,10 @@ export class CacheService {
   private static _instance: CacheService;
   cache: CacheData[] = [];
 
-  constructor() {
-    if (CacheService._instance) {
-      return CacheService._instance;
-    }
-    CacheService._instance = this;
-
-    return this;
-  }
-
   /**
-     * Returns the singleton instance of the class
-     * @returns {CacheService} The instance of the class.
-     */
+   * Returns the singleton instance of the class
+   * @returns {CacheService} The instance of the class.
+   */
   public static getInstance(): CacheService {
     if (!CacheService._instance) {
       CacheService._instance = new CacheService();

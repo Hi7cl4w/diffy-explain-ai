@@ -1,6 +1,6 @@
 {
   "name": "diffy-explain-ai",
-  "displayName": "DIFFY - Explains or Generate Your Commit",
+  "displayName": "DIFFY - Generate Your Commit Message",
   "description": "Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
   "version": "0.0.22",
   "publisher": "hitclaw",

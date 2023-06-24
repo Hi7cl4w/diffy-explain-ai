@@ -11,6 +11,7 @@ import { window } from "vscode";
 import { resolveNaptr } from "dns";
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import WorkspaceService from "./WorkspaceService";
+import axiosRetry from "axios-retry";
 export interface OpenAIErrorResponse {
   error?: Error;
 }
@@ -203,6 +204,12 @@ class OpenAiService implements AIService {
     let data = JSON.stringify(openAIConfig);
     progress?.report({ increment: 50 });
 
+    axiosRetry(axios, {
+      retryDelay: (retryCount) => {
+        return retryCount * 1000;
+      },
+    });
+
     let config: AxiosRequestConfig<any> = {
       method: "post",
       maxBodyLength: Infinity,
@@ -218,9 +225,7 @@ class OpenAiService implements AIService {
           let percentCompleted = Math.floor(
             (progressEvent.loaded / progressEvent.total) * 25
           );
-          console.log(percentCompleted);
           progress?.report({ increment: percentCompleted });
-          console.log("completed: ", percentCompleted);
         }
       },
       onDownloadProgress: (progressEvent) => {
@@ -245,7 +250,7 @@ class OpenAiService implements AIService {
             } `
           );
         } else {
-          window.showErrorMessage(`OpenAI Error Proxy`);
+          window.showErrorMessage(`OpenAI Error`);
         }
         return null;
       });

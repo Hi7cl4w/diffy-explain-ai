@@ -256,7 +256,6 @@ class OpenAiService implements AIService {
       });
     progress?.report({ increment: 1, message: "\nCommit message generated." });
     await new Promise((f) => setTimeout(f, 1000));
-    console.log(response);
     return response;
   }
 }

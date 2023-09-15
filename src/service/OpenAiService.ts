@@ -1,39 +1,27 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from "vscode";
-import {
-  Configuration,
-  CreateCompletionRequest,
-  CreateCompletionResponse,
-  OpenAIApi,
-} from "openai";
+import OpenAI from "openai";
 import { CacheService } from "./CacheService";
-import { window } from "vscode";
+import { window, workspace } from "vscode";
 import { resolveNaptr } from "dns";
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import WorkspaceService from "./WorkspaceService";
 import axiosRetry from "axios-retry";
+import { CONSTANTS } from "../Constants";
+
 export interface OpenAIErrorResponse {
+  status?: boolean;
   error?: Error;
 }
 
 export interface Error {
   message?: string;
+  type?: string;
 }
 
 class OpenAiService implements AIService {
   static _instance: OpenAiService;
   cacheService!: CacheService;
-  openAIConfig: CreateCompletionRequest = {
-    model: WorkspaceService.getInstance().getGptModel(),
-    prompt: null,
-    temperature: 0.9,
-    max_tokens: 2000,
-    top_p: 1.0,
-    frequency_penalty: 0.0,
-    presence_penalty: 0.0,
-    best_of: 1,
-    // stop: ['"""'],
-  };
 
   constructor() {
     if (OpenAiService._instance) {
@@ -72,17 +60,17 @@ class OpenAiService implements AIService {
     if (nameOnly) {
       gitCmd = "git diff --cached --name-status";
     }
-    code =
-      "Write a commit message in multiple lines where first line doesn't exceeds '50' characters by following commit message guidelines based on this diff changes without mentioning itself from following result of " +
+    const instructions =
+      "You are a bot generate 'conventional commit' message from the result of '" +
       gitCmd +
-      ":\n\n" +
-      code +
-      "\n\n";
-    // console.log("code: " + code);
-    // console.log("Length: " + code.length);
-    let response = await this.getFromOpenApi(code, openAIKey, progress);
-    if (response && response.choices) {
-      let message = String(response.choices[0].text);
+      "' that user given. commit message should be a multiple lines where first line doesn't exceeds '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
+    let response = await this.getFromOpenApi(instructions, code, openAIKey);
+    if (
+      response &&
+      response.choices.length > 0 &&
+      response.choices[0].message
+    ) {
+      let message = String(response?.choices[0].message.content);
       message = message.trim();
       message = message.replace(/^\"/gm, "");
       message = message.replace(/\"$/gm, "");
@@ -106,15 +94,17 @@ class OpenAiService implements AIService {
     if (nameOnly) {
       gitCmd = "git diff --cached --name-status";
     }
-    code =
-      "Generate paragraphs to explain this diff changes to a human without mentioning itself from the following console result of " +
+    const instructions =
+      "You are a bot explains the changes from the result of '" +
       gitCmd +
-      ':\n\n"""\n' +
-      code +
-      '\n\n"""\nGenerate paragraphs to explain this diff changes to a human without mentioning itself:\n\n';
-    let response = await this.getFromOpenApi(code, openAIKey);
-    if (response && response.choices) {
-      let message = String(response?.choices[0].text);
+      "' that user given. commit message should be a multiple lines where first line doesn't exceeds '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
+    let response = await this.getFromOpenApi(instructions, code, openAIKey);
+    if (
+      response &&
+      response.choices.length > 0 &&
+      response.choices[0].message
+    ) {
+      let message = String(response?.choices[0].message.content);
       message = message.trim();
       message = message.replace(/^\"/gm, "");
       message = message.replace(/\"$/gm, "");
@@ -130,119 +120,51 @@ class OpenAiService implements AIService {
    * @returns {Promise<CreateCompletionResponse> | undefined}.
    */
   private async getFromOpenApi(
+    instructions: string,
     prompt: string,
     openAIKey?: string,
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
     }>
-  ): Promise<CreateCompletionResponse | undefined> {
-    this.openAIConfig.prompt = prompt;
-    this.openAIConfig.model = WorkspaceService.getInstance().getGptModel();
-    console.log(this.openAIConfig.model);
-    const exist = this.cacheService.recordExists(
-      this.openAIConfig.model,
-      prompt
-    );
+  ): Promise<OpenAI.Chat.Completions.ChatCompletion | undefined> {
+    const openAiClient = new OpenAI({ apiKey: openAIKey });
+    const model = WorkspaceService.getInstance().getGptModel();
+    console.log(model);
+    const exist = this.cacheService.recordExists(model, prompt);
     if (exist) {
-      return new Promise<CreateCompletionResponse>((resolve) =>
-        resolve(this.cacheService.get(this.openAIConfig.model, prompt))
+      return new Promise<OpenAI.Chat.Completions.ChatCompletion>((resolve) =>
+        resolve(this.cacheService.get(model, prompt))
       );
     }
-    if (openAIKey) {
-      const configuration = new Configuration({
-        apiKey: openAIKey,
-      });
-      const openai = new OpenAIApi(configuration);
-      const response = await openai
-        .createCompletion(this.openAIConfig)
-        .then((value) => {
-          return value;
-        })
-        .catch(async (reason: AxiosError<OpenAIErrorResponse>) => {
-          console.error(reason.response);
-          if (reason.response?.statusText) {
-            window.showErrorMessage(
-              `OpenAI Error: ${
-                reason.response?.data.error?.message ||
-                reason.response.statusText
-              } `
-            );
-          } else {
-            window.showErrorMessage(`OpenAI Error`);
-          }
-          if (reason?.response?.status) {
-            if (reason?.response?.status === 429) {
-              window.showInformationMessage(
-                "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server."
-              );
-              return this.proxyRequest(this.openAIConfig, progress);
-            }
-          }
-        });
-      if (response && response?.data) {
-        this.cacheService.set(this.openAIConfig.model, prompt, response?.data);
-        console.log(response?.data);
-
-        return response?.data;
-      }
-      return undefined;
+    if (!openAIKey) {
+      openAiClient.apiKey = "mk-R4d04fe2a29e703da6ZC9Ub0wnz4XsNiRVBChTYbJcE3F";
+      openAiClient.baseURL = "https://gpt.pinocks.com/user/v1";
     } else {
-      const response = await this.proxyRequest(this.openAIConfig, progress);
-      console.log(response?.data);
-      return response?.data;
+      openAiClient.apiKey = openAIKey;
+      openAiClient.baseURL = "https://api.openai.com/v1";
     }
-  }
-
-  private async proxyRequest(
-    openAIConfig: CreateCompletionRequest,
-    progress?: vscode.Progress<{
-      message?: string | undefined;
-      increment?: number | undefined;
-    }>
-  ): Promise<AxiosResponse<CreateCompletionResponse, any> | null> {
-    let data = JSON.stringify(openAIConfig);
     progress?.report({ increment: 50 });
-
-    axiosRetry(axios, {
-      retryDelay: (retryCount) => {
-        return retryCount * 1000;
-      },
-    });
-
-    let config: AxiosRequestConfig<any> = {
-      method: "post",
-      maxBodyLength: Infinity,
-      url: "https://gpt.pinocks.com/user/v1/completions",
-      headers: {
-        Authorization:
-          "Bearer mk-R4d04fe2a29e703da6ZC9Ub0wnz4XsNiRVBChTYbJcE3F",
-        "Content-Type": "application/json",
-      },
-      data: data,
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent && progressEvent.loaded && progressEvent.total) {
-          let percentCompleted = Math.floor(
-            (progressEvent.loaded / progressEvent.total) * 25
-          );
-          progress?.report({ increment: percentCompleted });
-        }
-      },
-      onDownloadProgress: (progressEvent) => {
-        // console.log("progressEvent");
-        // console.log(progressEvent);
-        if (progressEvent && progressEvent.loaded && progressEvent.total) {
-          let percentCompleted = Math.floor(
-            (progressEvent.loaded / progressEvent.total) * 25
-          );
-          progress?.report({ increment: percentCompleted - 1 });
-        }
-      },
+    const params: OpenAI.Chat.ChatCompletionCreateParams = {
+      messages: [
+        {
+          role: "system",
+          content: instructions,
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      model: "gpt-3.5-turbo",
     };
-    const response = await axios
-      .request<CreateCompletionResponse>(config)
-      .catch((reason) => {
-        console.error(reason);
+    const response = await openAiClient.chat.completions
+      .create(params)
+      .then((value) => {
+        return value;
+      })
+      .catch(async (reason: AxiosError<OpenAIErrorResponse>) => {
+        console.error(reason.response);
         if (reason.response?.statusText) {
           window.showErrorMessage(
             `OpenAI Error: ${
@@ -252,11 +174,54 @@ class OpenAiService implements AIService {
         } else {
           window.showErrorMessage(`OpenAI Error`);
         }
+        if (reason?.response?.status && openAIKey) {
+          if (reason?.response?.status === 429) {
+            window.showInformationMessage(
+              "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server."
+            );
+            // return await this.getFromOpenApi(prompt, undefined, progress);
+          }
+        }
+        if (reason.response?.data.error?.type === "invalid_request_error") {
+          window.showErrorMessage(
+            `Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later.`
+          );
+          progress?.report({
+            increment: 1,
+            message: "\nFailed.",
+          });
+        } else if (reason.response?.data.error?.message) {
+          window.showErrorMessage(
+            `Diffy Error: ${reason.response?.data.error?.message}`
+          );
+          progress?.report({
+            increment: 1,
+            message: "\nFailed.",
+          });
+        }
         return null;
       });
-    progress?.report({ increment: 1, message: "\nCommit message generated." });
-    await new Promise((f) => setTimeout(f, 1000));
-    return response;
+    if (
+      response &&
+      response?.choices[0].message.content &&
+      response?.choices[0].message.content !== "" &&
+      response?.choices[0].message.content !== "\n"
+    ) {
+      if (response?.choices[0].message.content.length > 6) {
+        this.cacheService.set(
+          model,
+          prompt,
+          response?.choices[0].message.content
+        );
+      }
+      progress?.report({
+        increment: 1,
+        message: "\nCommit message generated.",
+      });
+      await new Promise((f) => setTimeout(f, 200));
+      return response;
+    }
+    return undefined;
   }
 }
 

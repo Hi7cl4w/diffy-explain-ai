@@ -2,7 +2,7 @@
   "name": "diffy-explain-ai",
   "displayName": "DIFFY - Generate Your Commit Message",
   "description": "Generate Commit Message for You or Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
-  "version": "0.0.24",
+  "version": "1.0.0",
   "publisher": "hitclaw",
   "engines": {
     "vscode": "^1.72.0"
@@ -101,28 +101,16 @@
             "gpt-4",
             "gpt-4-32k",
             "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0301",
-            "text-davinci-003",
-            "text-curie-001",
-            "text-babbage-001",
-            "text-ada-001",
-            "code-davinci-002",
-            "code-cushman-001"
+            "gpt-3.5-turbo-0301"
           ],
-          "default": "text-davinci-003",
+          "default": "gpt-3.5-turbo",
           "markdownDescription": "OpenAI models to use for your prompts. [Documentation](https://beta.openai.com/docs/models/models). \n\n**If you face 400 Bad Request please make sure you are using the right model for your integration method.**",
           "order": 36,
           "enumItemLabels": [
             "gpt-4",
             "gpt-4-32k",
             "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0301",
-            "text-davinci-003",
-            "text-curie-001",
-            "text-babbage-001",
-            "text-ada-001",
-            "code-davinci-002",
-            "code-cushman-001"
+            "gpt-3.5-turbo-0301"
           ],
           "markdownEnumDescriptions": [
             "GPT-4, the latest and greatest model from OpenAI. 2x longer inputs than GPT-3.",
@@ -164,7 +152,7 @@
   "dependencies": {
     "axios": "^1.2.1",
     "axios-retry": "^3.5.0",
-    "openai": "^3.1.0",
+    "openai": "^4.7.0",
     "simple-git": "^3.16.0"
   }
 }

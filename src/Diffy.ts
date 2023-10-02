@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ExtensionContext, env } from "vscode";
+import { env, ExtensionContext } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
 import GitService from "./service/GitService";
@@ -71,9 +71,9 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
-    // if (!apiKey) {
-    //   return;
-    // }
+    if (!apiKey) {
+      return;
+    }
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
@@ -117,9 +117,9 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
-    // if (!apiKey) {
-    //   return;
-    // }
+    if (!apiKey) {
+      return;
+    }
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
@@ -164,6 +164,9 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
+    if (!apiKey) {
+      return;
+    }
 
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
@@ -214,6 +217,9 @@ class Diffy extends BaseDiffy {
     }
     /* Checking if the api key is defined. */
     const apiKey = this.workspaceService?.getOpenAIKey();
+    if (!apiKey) {
+      return;
+    }
 
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();

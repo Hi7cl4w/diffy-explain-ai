@@ -1,5 +1,5 @@
-import { WorkspaceFolder, window, workspace } from "vscode";
 import { EventEmitter } from "events";
+import { window, workspace, WorkspaceFolder } from "vscode";
 import { EventType } from "../@types/EventType";
 import { CONSTANTS } from "../Constants";
 
@@ -91,19 +91,53 @@ export default class WorkspaceService extends EventEmitter {
   }
 
   getOpenAIKey() {
-    const openAiKey: string = String(this.getConfiguration().get("openAiKey"));
-    // if (!openAiKey) {
-    //   this.showErrorMessage(
-    //     "Please Enter Your OpenAi Api Key in Settings.\nVisit The Openai Website to Generate Key"
-    //   );
-    //   return null;
-    // }
-    return openAiKey;
+    const value = String(this.getConfiguration().get("openAiKey"));
+    if (!value) {
+      this.showErrorMessage(
+        "Your OpenAI API Key is missing; kindly input it within the Diffy Settings section. You can generate a key by visiting the OpenAI website."
+      );
+      return null;
+    }
+    return value;
   }
 
   getGptModel() {
-    const openAiKey: string = String(this.getConfiguration().get("model"));
-    return openAiKey;
+    const value = String(this.getConfiguration().get("model"));
+    return value;
+  }
+
+  getProxyUrl() {
+    const value = this.getConfiguration().get("proxyUrl")
+      ? String(this.getConfiguration().get("proxyUrl"))
+      : undefined;
+    return value;
+  }
+
+  getAIInstructions() {
+    const value = this.getConfiguration().get("aiInstructions")
+      ? String(this.getConfiguration().get("aiInstructions"))
+      : undefined;
+    if (!value) {
+      this.showErrorMessage(
+        "Instructions for AI are absent; please provide them within the Diffy Settings section."
+      );
+      return null;
+    }
+    return value;
+  }
+
+  getTemp() {
+    const value = this.getConfiguration().get("temperature")
+      ? Number(this.getConfiguration().get("temperature"))
+      : undefined;
+    return value;
+  }
+
+  getMaxTokens() {
+    const value = this.getConfiguration().get("maxTokens")
+      ? Number(this.getConfiguration().get("maxTokens"))
+      : undefined;
+    return value;
   }
 
   /**

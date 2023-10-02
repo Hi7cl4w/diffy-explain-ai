@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as vscode from "vscode";
+import { AxiosError } from "axios";
 import OpenAI from "openai";
+import * as vscode from "vscode";
+import { window } from "vscode";
 import { CacheService } from "./CacheService";
-import { window, workspace } from "vscode";
-import { resolveNaptr } from "dns";
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import WorkspaceService from "./WorkspaceService";
-import axiosRetry from "axios-retry";
-import { CONSTANTS } from "../Constants";
 
 export interface OpenAIErrorResponse {
   status?: boolean;
@@ -60,11 +57,16 @@ class OpenAiService implements AIService {
     if (nameOnly) {
       gitCmd = "git diff --cached --name-status";
     }
-    const instructions =
-      "You are a bot generate 'conventional commit' message from the result of '" +
-      gitCmd +
-      "' that user given. commit message should be a multiple lines where first line doesn't exceeds '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
-    let response = await this.getFromOpenApi(instructions, code, openAIKey);
+    const instructions = WorkspaceService.getInstance().getAIInstructions();
+    if (!instructions) {
+      return null;
+    }
+    let response = await this.getFromOpenApi(
+      instructions,
+      code,
+      openAIKey,
+      progress
+    );
     if (
       response &&
       response.choices.length > 0 &&
@@ -138,11 +140,15 @@ class OpenAiService implements AIService {
       );
     }
     if (!openAIKey) {
-      openAiClient.apiKey = "mk-R4d04fe2a29e703da6ZC9Ub0wnz4XsNiRVBChTYbJcE3F";
-      openAiClient.baseURL = "https://gpt.pinocks.com/user/v1";
+      return undefined;
     } else {
       openAiClient.apiKey = openAIKey;
-      openAiClient.baseURL = "https://api.openai.com/v1";
+      const proxyUrl = WorkspaceService.getInstance().getProxyUrl();
+      if (proxyUrl) {
+        openAiClient.baseURL = proxyUrl;
+      } else {
+        openAiClient.baseURL = "https://api.openai.com/v1";
+      }
     }
     progress?.report({ increment: 50 });
     const params: OpenAI.Chat.ChatCompletionCreateParams = {
@@ -156,11 +162,14 @@ class OpenAiService implements AIService {
           content: prompt,
         },
       ],
-      model: "gpt-3.5-turbo",
+      model: model,
+      temperature: WorkspaceService.getInstance().getTemp(),
+      max_tokens: WorkspaceService.getInstance().getMaxTokens(),
     };
     const response = await openAiClient.chat.completions
       .create(params)
       .then((value) => {
+        progress?.report({ increment: 49 });
         return value;
       })
       .catch(async (reason: AxiosError<OpenAIErrorResponse>) => {

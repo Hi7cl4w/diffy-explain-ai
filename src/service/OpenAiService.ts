@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { AxiosError } from "axios";
 import OpenAI from "openai";
 import * as vscode from "vscode";
 import { window } from "vscode";
+import { clearOutput, sendToOutput } from "../utils/log";
 import { CacheService } from "./CacheService";
 import WorkspaceService from "./WorkspaceService";
 
@@ -129,15 +129,17 @@ class OpenAiService implements AIService {
       message?: string | undefined;
       increment?: number | undefined;
     }>
-  ): Promise<OpenAI.Chat.Completions.ChatCompletion | undefined> {
+  ) {
     const openAiClient = new OpenAI({ apiKey: openAIKey });
     const model = WorkspaceService.getInstance().getGptModel();
-    console.log(model);
-    const exist = this.cacheService.recordExists(model, prompt);
+    const exist = this.cacheService.recordExists(model, instructions + prompt);
     if (exist) {
-      return new Promise<OpenAI.Chat.Completions.ChatCompletion>((resolve) =>
-        resolve(this.cacheService.get(model, prompt))
-      );
+      const result = this.cacheService.get(
+        model,
+        instructions + prompt
+      ) as OpenAI.Chat.Completions.ChatCompletion;
+      sendToOutput(`result: ${JSON.stringify(result)}`);
+      return result;
     }
     if (!openAIKey) {
       return undefined;
@@ -166,14 +168,27 @@ class OpenAiService implements AIService {
       temperature: WorkspaceService.getInstance().getTemp(),
       max_tokens: WorkspaceService.getInstance().getMaxTokens(),
     };
+    clearOutput();
+    sendToOutput(`instructions: ${instructions}`);
+    sendToOutput(`git diff prompt: ${prompt}`);
+    sendToOutput(`base url: ${openAiClient.baseURL}`);
+    sendToOutput(`model: ${params.model}`);
+    sendToOutput(`max_tokens: ${params.max_tokens}`);
+    sendToOutput(`temperature: ${params.temperature}`);
     const response = await openAiClient.chat.completions
       .create(params)
       .then((value) => {
+        sendToOutput(`result success: ${JSON.stringify(value)}`);
         progress?.report({ increment: 49 });
         return value;
       })
-      .catch(async (reason: AxiosError<OpenAIErrorResponse>) => {
+      .catch(async (reason) => {
         console.error(reason.response);
+        sendToOutput(`result failed: ${JSON.stringify(reason)}`);
+        if (typeof reason === "string" || reason instanceof String) {
+          window.showErrorMessage(`OpenAI Error: ${reason} `);
+          return undefined;
+        }
         if (reason.response?.statusText) {
           window.showErrorMessage(
             `OpenAI Error: ${
@@ -208,7 +223,7 @@ class OpenAiService implements AIService {
             message: "\nFailed.",
           });
         }
-        return null;
+        return undefined;
       });
     if (
       response &&
@@ -217,11 +232,7 @@ class OpenAiService implements AIService {
       response?.choices[0].message.content !== "\n"
     ) {
       if (response?.choices[0].message.content.length > 6) {
-        this.cacheService.set(
-          model,
-          prompt,
-          response?.choices[0].message.content
-        );
+        this.cacheService.set(model, instructions + prompt, response);
       }
       progress?.report({
         increment: 1,

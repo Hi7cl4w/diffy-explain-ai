@@ -6,6 +6,7 @@ import GitService from "./service/GitService";
 import OpenAiService from "./service/OpenAiService";
 import WindowService from "./service/WindowService";
 import WorkspaceService from "./service/WorkspaceService";
+import { sendToOutput } from "./utils/log";
 
 class Diffy extends BaseDiffy {
   static _instance: Diffy;
@@ -34,6 +35,7 @@ class Diffy extends BaseDiffy {
       this.onWorkSpaceChanged();
     });
     this.isEnabled = true;
+    sendToOutput(`initiated`);
   }
 
   /**

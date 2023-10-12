@@ -6,7 +6,7 @@ import simpleGit from "simple-git";
 
 class GitService {
   static _instance: GitService;
-  isEnabled: boolean = false;
+  isEnabled = false;
   vscodeGitApi: GitApi | null = null;
 
   /**

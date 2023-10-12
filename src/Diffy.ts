@@ -13,7 +13,7 @@ class Diffy extends BaseDiffy {
   private gitService: GitService | null = null;
   private _openAIService: OpenAiService | null = null;
   private workspaceService: WorkspaceService | null = null;
-  isEnabled: boolean = false;
+  isEnabled = false;
   private _windowsService: any;
   context!: ExtensionContext;
 

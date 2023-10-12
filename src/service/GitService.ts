@@ -47,7 +47,7 @@ class GitService {
       const api = await this.getVscodeGitApi();
       if (api === undefined) {
         this.showErrorMessage(
-          `Please make sure git repo initiated or scm plugin working`
+          "Please make sure git repo initiated or scm plugin working"
         );
         this.isEnabled = false;
         return;
@@ -64,7 +64,7 @@ class GitService {
   async checkAndWarnRepoExist() {
     const repos = this.vscodeGitApi?.repositories;
     if (repos === undefined || repos.length === 0) {
-      this.showErrorMessage(`No Git Repo Found in Current Workspace`);
+      this.showErrorMessage("No Git Repo Found in Current Workspace");
       return false;
     }
     return true;

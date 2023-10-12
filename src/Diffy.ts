@@ -35,7 +35,7 @@ class Diffy extends BaseDiffy {
       this.onWorkSpaceChanged();
     });
     this.isEnabled = true;
-    sendToOutput(`initiated`);
+    sendToOutput("initiated");
   }
 
   /**

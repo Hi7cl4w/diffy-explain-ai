@@ -43,7 +43,7 @@ export default class WorkspaceService extends EventEmitter {
       !workspace.workspaceFolders ||
       workspace.workspaceFolders.length === 0
     ) {
-      this.showErrorMessage(`Your are not in a Workspace`);
+      this.showErrorMessage("Your are not in a Workspace");
       return false;
     }
     return true;

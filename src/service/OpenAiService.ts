@@ -196,7 +196,7 @@ class OpenAiService implements AIService {
             } `
           );
         } else {
-          window.showErrorMessage(`OpenAI Error`);
+          window.showErrorMessage("OpenAI Error");
         }
         if (reason?.response?.status && openAIKey) {
           if (reason?.response?.status === 429) {
@@ -208,7 +208,7 @@ class OpenAiService implements AIService {
         }
         if (reason.response?.data.error?.type === "invalid_request_error") {
           window.showErrorMessage(
-            `Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later.`
+            "Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later."
           );
           progress?.report({
             increment: 1,

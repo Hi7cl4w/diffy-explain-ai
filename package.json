@@ -2,7 +2,7 @@
   "name": "diffy-explain-ai",
   "displayName": "Diffy Commit AI - Generate Your Commit Message",
   "description": "Generate Commit Message for You or Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
-  "version": "1.0.12",
+  "version": "1.0.15",
   "publisher": "hitclaw",
   "engines": {
     "vscode": "^1.72.0"
@@ -127,7 +127,7 @@
         },
         "diffy-explain-ai.aiInstructions": {
           "type": "string",
-          "default": "Your role as the commit message author involves creating clear and comprehensive commit messages in adherence to the conventional commit convention. Ensure the first line is restricted to 50 characters. Your objective is to detail WHAT changes have been made and, importantly, WHY they were implemented, while avoiding any mention of the commit itself. Keep each sentence within 75 characters. I will provide the output of the 'git diff --staged' command for you to craft into a commit message."
+          "default": "Analyze the provided git diff --staged output, categorize the changes into a conventional commit type (e.g., feat, fix, docs, chore,style), determine if a scope is applicable, and then synthesize a concise commit message that follows the format  <type>[optional scope]: <description> [optional body] [optional footer(s)]"
         }
       }
     }

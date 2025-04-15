@@ -2,10 +2,10 @@
   "name": "diffy-explain-ai",
   "displayName": "Diffy Commit AI - Generate Your Commit Message",
   "description": "Generate Commit Message for You or Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
-  "version": "1.1.0",
+  "version": "1.0.17",
   "publisher": "hitclaw",
   "engines": {
-    "vscode": "^1.72.0"
+    "vscode": "^1.72.1"
   },
   "categories": [
     "SCM Providers"
@@ -102,17 +102,7 @@
         },
         "diffy-explain-ai.model": {
           "type": "string",
-          "enum": [
-            "gpt-4",
-            "gpt-4-0613",
-            "gpt-4-32k",
-            "gpt-4-32k-0613",
-            "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0613",
-            "gpt-3.5-turbo-16k",
-            "gpt-3.5-turbo-16k-0613"
-          ],
-          "default": "gpt-3.5-turbo",
+          "default": "gpt-4-turbo",
           "markdownDescription": "OpenAI models to use for your prompts. [Documentation](https://beta.openai.com/docs/models/models). \n\n**If you face 400 Bad Request please make sure you are using the right model for your integration method.**"
         },
         "diffy-explain-ai.temperature": {

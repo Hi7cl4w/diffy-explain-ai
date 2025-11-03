@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import OpenAI from "openai";
 import * as vscode from "vscode";
 import { window } from "vscode";

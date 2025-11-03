@@ -1,0 +1,18 @@
+# Build output
+out/
+dist/
+
+# Dependencies
+node_modules/
+
+# Type definitions
+**/*.d.ts
+
+# Config files
+webpack.config.js
+
+# VSCode settings
+.vscode/
+
+# Large files
+src/encoder.json

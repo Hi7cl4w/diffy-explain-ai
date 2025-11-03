@@ -4,6 +4,33 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.1.0] - 2025-11-03
+
+### Added
+
+- **VS Code Language Model API Integration**: Support for GitHub Copilot as an AI service provider
+- New configuration option `aiServiceProvider` to choose between OpenAI and VS Code LM
+- New configuration option `vscodeLmModel` to select between `copilot-gpt-4o` and `copilot-gpt-3.5-turbo`
+- Dual AI provider architecture allowing users to switch between OpenAI API and GitHub Copilot
+
+### Changed
+
+- Updated VS Code engine requirement to ^1.90.0 for Language Model API support
+- Improved singleton pattern implementation in service classes
+- Modernized imports with `node:` protocol for Node.js built-in modules
+- Enhanced type safety with better TypeScript type definitions
+
+### Fixed
+
+- Fixed singleton constructor patterns in OpenAiService, WorkspaceService, and VsCodeLlmService
+- Fixed confusing void type in EventEmitter type definitions
+- Removed unused variables and parameters warnings
+
+### Documentation
+
+- Updated README with instructions for both OpenAI and GitHub Copilot setup
+- Added comprehensive configuration guide for dual AI provider support
+
 ## [Unreleased]
 
 - Initial release

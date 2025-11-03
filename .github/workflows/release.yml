@@ -44,29 +44,10 @@ jobs:
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           
-          # Check if this version already has a tag (meaning it was published before)
-          if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
-            echo "needs_bump=true" >> $GITHUB_OUTPUT
-            echo "Version $CURRENT_VERSION already exists, needs bump"
-          else
-            echo "needs_bump=false" >> $GITHUB_OUTPUT
-            echo "Version $CURRENT_VERSION is new, no bump needed"
-          fi
-
-      - name: Check if version tag exists
-        id: check-tag
-        run: |
-          if git rev-parse "v${{ steps.check-version-bump.outputs.current_version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.check-version-bump.outputs.current_version }} already exists"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.check-version-bump.outputs.current_version }} does not exist"
-          fi
-
-      - name: Analyze commits for version bump
+          # Always bump version for publishing to avoid marketplace conflicts
+          echo "needs_bump=true" >> $GITHUB_OUTPUT
+          echo "Version bump always required for publishing to avoid conflicts"      - name: Analyze commits for version bump
         id: analyze-commits
-        if: steps.check-tag.outputs.exists == 'true' || github.event.inputs.version-bump == 'auto'
         run: |
           # Get commits since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -183,7 +164,7 @@ jobs:
           echo "2. Re-run this release workflow to continue with publishing" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "*The workflow will stop here until the PR is merged.*" >> $GITHUB_STEP_SUMMARY
-          
+
           # Exit with error to stop the workflow until PR is merged
           exit 1
 

@@ -1,4 +1,4 @@
-import { CacheData, CacheResult } from "../@types/extension";
+import type { CacheData, CacheResult } from "../@types/extension";
 
 export class CacheService {
   private static _instance: CacheService;
@@ -17,7 +17,7 @@ export class CacheService {
 
   /* A method that takes in a entity and data. It then checks if the record exists and if it
   doesn't it pushes it to the cache. */
-  public set = (entity: string, data: any, result: any): void => {
+  public set = (entity: string, data: string, result: CacheResult): void => {
     if (!this.recordExists(entity, data)) {
       this.cache.push({
         entity: entity,
@@ -29,7 +29,7 @@ export class CacheService {
 
   /* A method that takes in entity and data. It then checks if the record exists and if it
     doesn't it pushes it to the cache. */
-  public get = (entity: string, data: any): CacheResult | null => {
+  public get = (entity: string, data: string): CacheResult | null => {
     const cacheRecord = this.cache.find((x) => {
       if (data) {
         return x.entity === entity && x.data === data;
@@ -47,7 +47,7 @@ export class CacheService {
 
   /* It's a method that takes in entity and data . It then checks if the record exists and if it
       doesn't it pushes it to the cache. */
-  public recordExists = (entity: string, data: any): boolean => {
+  public recordExists = (entity: string, data: string): boolean => {
     return !!this.get(entity, data);
   };
 }

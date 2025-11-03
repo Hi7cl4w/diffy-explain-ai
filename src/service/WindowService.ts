@@ -1,4 +1,4 @@
-import { ViewColumn, WebviewPanel, window } from "vscode";
+import { ViewColumn, type WebviewPanel, window } from "vscode";
 
 export default class WindowService {
   static _instance: WindowService;
@@ -24,15 +24,10 @@ export default class WindowService {
   }
 
   private createWebviewPanel() {
-    this.panel = window.createWebviewPanel(
-      "ExplainGitDiff",
-      "Explain Git Diff",
-      ViewColumn.Two,
-      {
-        enableScripts: false,
-        retainContextWhenHidden: true,
-      }
-    );
+    this.panel = window.createWebviewPanel("ExplainGitDiff", "Explain Git Diff", ViewColumn.Two, {
+      enableScripts: false,
+      retainContextWhenHidden: true,
+    });
   }
 
   private getWebviewContent(explain: string) {

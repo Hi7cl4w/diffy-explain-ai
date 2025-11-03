@@ -4,6 +4,13 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.2.1](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.2.0...diffy-explain-ai-v1.2.1) (2025-11-03)
+
+
+### 💅 Styles
+
+* **config:** format release-please configuration files ([b1bd5be](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b1bd5beaab289834f0b8a2ffd86cf25aa185560b))
+
 ## [1.2.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.1.0...diffy-explain-ai-v1.2.0) (2025-11-03)
 
 

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { type ExtensionContext, env } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
+import GeminiService from "./service/GeminiService";
 import GitService from "./service/GitService";
 import OpenAiService from "./service/OpenAiService";
 import VsCodeLlmService from "./service/VsCodeLlmService";
@@ -14,6 +15,7 @@ class Diffy extends BaseDiffy {
   private gitService: GitService | null = null;
   private _openAIService: OpenAiService | null = null;
   private _vsCodeLlmService: VsCodeLlmService | null = null;
+  private _geminiService: GeminiService | null = null;
   private workspaceService: WorkspaceService | null = null;
   isEnabled = false;
   private _windowsService: WindowService | null = null;
@@ -72,13 +74,28 @@ class Diffy extends BaseDiffy {
   }
 
   /**
+   * If the _geminiService property is not defined, then create a new instance of the GeminiService
+   * class and assign it to the _geminiService property.
+   * @returns The GeminiService object.
+   */
+  getGeminiService(): GeminiService {
+    if (!this._geminiService) {
+      this._geminiService = GeminiService.getInstance();
+    }
+    return this._geminiService;
+  }
+
+  /**
    * Gets the appropriate AI service based on user settings
-   * @returns The selected AI service (OpenAI or VS Code LLM)
+   * @returns The selected AI service (OpenAI, VS Code LLM, or Gemini)
    */
   getAIService(): AIService {
     const provider = this.workspaceService?.getAiServiceProvider();
     if (provider === "vscode-lm") {
       return this.getVsCodeLlmService();
+    }
+    if (provider === "gemini") {
+      return this.getGeminiService();
     }
     return this.getOpenAPIService();
   }
@@ -100,9 +117,14 @@ class Diffy extends BaseDiffy {
 
     const provider = this.workspaceService?.getAiServiceProvider();
 
-    // Check if API key is required (for OpenAI)
+    // Check if API key is required (for OpenAI and Gemini)
     if (provider === "openai") {
       const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
       if (!apiKey) {
         return;
       }
@@ -137,6 +159,12 @@ class Diffy extends BaseDiffy {
         return;
       }
       changes = await (aiService as OpenAiService).getExplainedChanges(diff, apiKey, nameOnly);
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await (aiService as GeminiService).getExplainedChanges(diff, apiKey, nameOnly);
     } else {
       // VS Code LLM - try with fallback to OpenAI if it fails
       try {
@@ -186,9 +214,14 @@ class Diffy extends BaseDiffy {
 
     const provider = this.workspaceService?.getAiServiceProvider();
 
-    // Check if API key is required (for OpenAI)
+    // Check if API key is required (for OpenAI and Gemini)
     if (provider === "openai") {
       const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
       if (!apiKey) {
         return;
       }
@@ -223,6 +256,12 @@ class Diffy extends BaseDiffy {
         return;
       }
       changes = await (aiService as OpenAiService).getExplainedChanges(diff, apiKey, nameOnly);
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await (aiService as GeminiService).getExplainedChanges(diff, apiKey, nameOnly);
     } else {
       // VS Code LLM - try with fallback to OpenAI if it fails
       try {
@@ -273,9 +312,14 @@ class Diffy extends BaseDiffy {
 
     const provider = this.workspaceService?.getAiServiceProvider();
 
-    // Check if API key is required (for OpenAI)
+    // Check if API key is required (for OpenAI and Gemini)
     if (provider === "openai") {
       const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
       if (!apiKey) {
         return;
       }
@@ -309,6 +353,12 @@ class Diffy extends BaseDiffy {
         return;
       }
       changes = await this.getOpenAPIService().getCommitMessageFromDiff(diff, apiKey, nameOnly);
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await this.getGeminiService().getCommitMessageFromDiff(diff, apiKey, nameOnly);
     } else {
       // VS Code LLM - try with fallback to OpenAI if it fails
       try {
@@ -368,9 +418,14 @@ class Diffy extends BaseDiffy {
 
     const provider = this.workspaceService?.getAiServiceProvider();
 
-    // Check if API key is required (for OpenAI)
+    // Check if API key is required (for OpenAI and Gemini)
     if (provider === "openai") {
       const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
       if (!apiKey) {
         return;
       }
@@ -404,6 +459,17 @@ class Diffy extends BaseDiffy {
         return;
       }
       changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+        diff,
+        apiKey,
+        nameOnly,
+        progress,
+      );
+    } else if (provider === "gemini") {
+      const apiKey = this.workspaceService?.getGeminiKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await this.getGeminiService().getCommitMessageFromDiff(
         diff,
         apiKey,
         nameOnly,
@@ -461,6 +527,7 @@ class Diffy extends BaseDiffy {
     this.gitService = null;
     this._openAIService = null;
     this._vsCodeLlmService = null;
+    this._geminiService = null;
     this.workspaceService = null;
   }
 }

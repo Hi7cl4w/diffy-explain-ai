@@ -1,10 +1,11 @@
 import * as path from "node:path";
 import { glob } from "glob";
-import * as Mocha from "mocha";
+
+import Mocha = require("mocha");
 
 export function run(): Promise<void> {
   // Create the mocha test
-  const mocha = new (Mocha as any)({
+  const mocha = new Mocha({
     ui: "tdd",
     color: true,
   });

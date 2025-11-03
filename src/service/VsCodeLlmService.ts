@@ -137,21 +137,15 @@ ${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : "
 
 Return ONLY the commit message, no explanations or surrounding text.`;
     }
+    const response = await this.getFromVsCodeLlm(instructions, code, progress);
 
-    try {
-      const response = await this.getFromVsCodeLlm(instructions, code, progress);
-
-      if (response) {
-        let message = response.trim();
-        message = message.replace(/^"/gm, "");
-        message = message.replace(/"$/gm, "");
-        return message;
-      }
-      return null;
-    } catch (error) {
-      // Re-throw the error so it can be caught by the calling function
-      throw error;
+    if (response) {
+      let message = response.trim();
+      message = message.replace(/^"/gm, "");
+      message = message.replace(/"$/gm, "");
+      return message;
     }
+    return null;
   }
 
   /**
@@ -163,22 +157,15 @@ Return ONLY the commit message, no explanations or surrounding text.`;
   async getExplainedChanges(_string1: string, string2: string): Promise<string | null> {
     const instructions =
       "You are a bot that explains the changes from the result of 'git diff --cached' that user given. commit message should be a multiple lines where first line doesn't exceed '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
+    const response = await this.getFromVsCodeLlm(instructions, string2);
 
-    // Use string2 as the code/diff, string1 is typically instructions but we use our own
-    try {
-      const response = await this.getFromVsCodeLlm(instructions, string2);
-
-      if (response) {
-        let message = response.trim();
-        message = message.replace(/^"/gm, "");
-        message = message.replace(/"$/gm, "");
-        return message;
-      }
-      return null;
-    } catch (error) {
-      // Re-throw the error so it can be caught by the calling function
-      throw error;
+    if (response) {
+      let message = response.trim();
+      message = message.replace(/^"/gm, "");
+      message = message.replace(/"$/gm, "");
+      return message;
     }
+    return null;
   }
 
   /**

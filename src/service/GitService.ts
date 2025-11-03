@@ -176,34 +176,57 @@ class GitService {
 
   /**
    * Get the diff in the git repository.
+   * Handles submodules correctly by using simple-git with safe configuration.
    * @returns The diff object is being returned.
    */
   async getGitDiff(repo: Repository, _cachedInput = true, nameOnly?: boolean) {
-    // let diff = await repo.diff(cached);
-    const git = simpleGit(repo.rootUri.fsPath);
+    // Configure simple-git for proper submodule handling
+    const git = simpleGit(repo.rootUri.fsPath, {
+      binary: "git",
+      maxConcurrentProcesses: 6,
+    });
+
     let diff: string | null = "";
 
     // Get exclusion patterns from settings
     const excludePatterns = WorkspaceService.getInstance().getExcludeFilesFromDiff();
 
-    if (!nameOnly) {
-      diff = await git.diff(["--cached"]).catch((error) => {
-        this.showErrorMessage("git repository not found");
-        console.error(error);
+    try {
+      // Check if we're in a valid git repository (handles submodules)
+      const isRepo = await git.checkIsRepo();
+      if (!isRepo) {
+        this.showErrorMessage("Not a git repository");
         return null;
-      });
-
-      // Apply file filtering if diff was successful
-      if (diff && excludePatterns.length > 0) {
-        diff = this.filterDiffByExclusions(diff, excludePatterns);
       }
-    } else {
-      diff = await git.diff(["--cached", "--name-status"]).catch((error) => {
-        this.showErrorMessage("git repository not found");
-        console.error(error);
-        return null;
-      });
+
+      if (!nameOnly) {
+        diff = await git.diff(["--cached"]);
+
+        // Apply file filtering if diff was successful
+        if (diff && excludePatterns.length > 0) {
+          diff = this.filterDiffByExclusions(diff, excludePatterns);
+        }
+      } else {
+        diff = await git.diff(["--cached", "--name-status"]);
+      }
+    } catch (error) {
+      // Handle specific git errors
+      if (error && typeof error === "object" && "message" in error) {
+        const errorMessage = (error as Error).message;
+        if (errorMessage.includes("not a git repository")) {
+          this.showErrorMessage("Not a git repository");
+        } else if (errorMessage.includes("submodule")) {
+          this.showErrorMessage("Submodule error - ensure submodules are initialized");
+        } else {
+          this.showErrorMessage("Git operation failed");
+        }
+      } else {
+        this.showErrorMessage("Git operation failed");
+      }
+      console.error("Git diff error:", error);
+      return null;
     }
+
     return diff;
   }
 

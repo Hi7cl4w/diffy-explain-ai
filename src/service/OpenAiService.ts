@@ -17,13 +17,10 @@ export interface Error {
 
 class OpenAiService implements AIService {
   static _instance: OpenAiService;
-  cacheService!: CacheService;
+  cacheService: CacheService;
 
-  constructor() {
-    if (!OpenAiService._instance) {
-      OpenAiService._instance = this;
-      this.cacheService = CacheService.getInstance();
-    }
+  private constructor() {
+    this.cacheService = CacheService.getInstance();
   }
 
   /**

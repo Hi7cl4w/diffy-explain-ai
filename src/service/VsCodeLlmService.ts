@@ -6,13 +6,10 @@ import WorkspaceService from "./WorkspaceService";
 
 class VsCodeLlmService implements AIService {
   static _instance: VsCodeLlmService;
-  cacheService!: CacheService;
+  cacheService: CacheService;
 
-  constructor() {
-    if (!VsCodeLlmService._instance) {
-      VsCodeLlmService._instance = this;
-      this.cacheService = CacheService.getInstance();
-    }
+  private constructor() {
+    this.cacheService = CacheService.getInstance();
   }
 
   /**

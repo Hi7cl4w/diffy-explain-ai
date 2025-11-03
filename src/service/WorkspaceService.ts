@@ -6,20 +6,17 @@ import { CONSTANTS } from "../Constants";
 export default class WorkspaceService extends EventEmitter {
   static _instance: WorkspaceService;
 
-  constructor() {
+  private constructor() {
     super();
-    if (!WorkspaceService._instance) {
-      WorkspaceService._instance = this;
-      /* Listening for changes to the workspace configuration. */
-      workspace.onDidChangeConfiguration((_e) => {
-        this.emit(EventType.WORKSPACE_CHANGED);
-      });
+    /* Listening for changes to the workspace configuration. */
+    workspace.onDidChangeConfiguration((_e) => {
+      this.emit(EventType.WORKSPACE_CHANGED);
+    });
 
-      /* Listening for changes to the workspace configuration. */
-      workspace.onDidChangeWorkspaceFolders((_e) => {
-        this.emit(EventType.WORKSPACE_CHANGED);
-      });
-    }
+    /* Listening for changes to the workspace configuration. */
+    workspace.onDidChangeWorkspaceFolders((_e) => {
+      this.emit(EventType.WORKSPACE_CHANGED);
+    });
   }
 
   /**
@@ -40,7 +37,7 @@ export default class WorkspaceService extends EventEmitter {
    */
   checkAndWarnWorkSpaceExist(): boolean {
     if (!workspace.workspaceFolders || workspace.workspaceFolders.length === 0) {
-      void this.showErrorMessage("Your are not in a Workspace");
+      this.showErrorMessage("Your are not in a Workspace");
       return false;
     }
     return true;
@@ -94,7 +91,7 @@ export default class WorkspaceService extends EventEmitter {
   getOpenAIKey() {
     const value = String(this.getConfiguration().get("openAiKey"));
     if (!value) {
-      void this.showErrorMessage(
+      this.showErrorMessage(
         "Your OpenAI API Key is missing; kindly input it within the Diffy Settings section. You can generate a key by visiting the OpenAI website.",
       );
       return null;
@@ -119,7 +116,7 @@ export default class WorkspaceService extends EventEmitter {
       ? String(this.getConfiguration().get("aiInstructions"))
       : undefined;
     if (!value) {
-      void this.showErrorMessage(
+      this.showErrorMessage(
         "Instructions for AI are absent; please provide them within the Diffy Settings section.",
       );
       return null;

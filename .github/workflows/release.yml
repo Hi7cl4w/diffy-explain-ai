@@ -1,33 +1,49 @@
 name: Release Extension
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
-      version-bump:
-        description: "Version bump type (auto/major/minor/patch)"
+      release-type:
+        description: "Release type override (leave empty for automatic)"
         required: false
-        default: "auto"
-        type: choice
-        options:
-          - auto
-          - major
-          - minor
-          - patch
+        default: ""
+        type: string
 
 permissions:
   contents: write
-  pull-requests: read
+  issues: write
+  pull-requests: write
 
 jobs:
-  release:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for version detection
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -37,136 +53,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Check if version bump is needed
-        id: check-version-bump
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          
-          # Always bump version for publishing to avoid marketplace conflicts
-          echo "needs_bump=true" >> $GITHUB_OUTPUT
-          echo "Version bump always required for publishing to avoid conflicts"      - name: Analyze commits for version bump
-        id: analyze-commits
-        run: |
-          # Get commits since last tag
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-          if [ -z "$LAST_TAG" ]; then
-            echo "No previous tags found, defaulting to patch"
-            echo "bump=patch" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s")
-
-          if echo "$COMMITS" | grep -qE "^(feat|feature)(\(.+\))?!:|^BREAKING CHANGE:|^[a-z]+(\(.+\))?!:"; then
-            echo "bump=major" >> $GITHUB_OUTPUT
-            echo "Detected BREAKING CHANGE - major version bump"
-          elif echo "$COMMITS" | grep -qE "^(feat|feature)(\(.+\))?:"; then
-            echo "bump=minor" >> $GITHUB_OUTPUT
-            echo "Detected feature - minor version bump"
-          else
-            echo "bump=patch" >> $GITHUB_OUTPUT
-            echo "Detected fixes/chores - patch version bump"
-          fi
-
-      - name: Determine version bump type
-        id: version-bump
-        run: |
-          if [ "${{ github.event.inputs.version-bump }}" != "auto" ] && [ -n "${{ github.event.inputs.version-bump }}" ]; then
-            echo "type=${{ github.event.inputs.version-bump }}" >> $GITHUB_OUTPUT
-            echo "Using manual version bump: ${{ github.event.inputs.version-bump }}"
-          else
-            echo "type=${{ steps.analyze-commits.outputs.bump }}" >> $GITHUB_OUTPUT
-            echo "Using automatic version bump: ${{ steps.analyze-commits.outputs.bump }}"
-          fi
-
-      - name: Bump version
-        id: bump-version
-        if: steps.check-version-bump.outputs.needs_bump == 'true'
-        run: |
-          # Always bump version for publishing to avoid conflicts
-          npm version patch --no-git-tag-version
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "Bumped version to: $NEW_VERSION"
-
-      - name: Set final version
-        id: final-version
-        run: |
-          if [ "${{ steps.check-version-bump.outputs.needs_bump }}" == "true" ]; then
-            echo "version=${{ steps.bump-version.outputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ steps.check-version-bump.outputs.current_version }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create version bump branch
-        id: create-branch
-        if: steps.check-version-bump.outputs.needs_bump == 'true'
-        run: |
-          BRANCH_NAME="release/v${{ steps.bump-version.outputs.version }}"
-          git checkout -b $BRANCH_NAME
-          echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          echo "Created branch: $BRANCH_NAME"
-
-      - name: Commit version changes
-        if: steps.check-version-bump.outputs.needs_bump == 'true'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add package.json package-lock.json
-          git commit -m "chore: bump version to ${{ steps.bump-version.outputs.version }}"
-          git push origin ${{ steps.create-branch.outputs.branch }}
-          echo "Committed and pushed version bump to branch: ${{ steps.create-branch.outputs.branch }}"
-
-      - name: Create Pull Request
-        id: create-pr
-        if: steps.check-version-bump.outputs.needs_bump == 'true'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ steps.create-branch.outputs.branch }}
-          base: main
-          title: "chore: bump version to ${{ steps.bump-version.outputs.version }}"
-          body: |
-            ## Version Bump
-
-            This PR bumps the version to ${{ steps.bump-version.outputs.version }} for the upcoming release.
-
-            ### Changes
-            - Updated version in package.json from ${{ steps.check-version-bump.outputs.current_version }} to ${{ steps.bump-version.outputs.version }}
-            - Updated package-lock.json accordingly
-
-            ### Next Steps
-            After merging this PR, the release workflow will continue with building and publishing the extension.
-
-            ---
-            *This PR was automatically created by the release workflow.*
-          labels: |
-            automated
-            version-bump
-          draft: false
-
-      - name: Wait for PR merge and continue release
-        if: steps.check-version-bump.outputs.needs_bump == 'true'
-        run: |
-          echo "Pull Request created: ${{ steps.create-pr.outputs.pull-request-url }}"
-          echo "Please merge the PR before the release can continue."
-          echo "## ⏳ Waiting for Version Bump PR Merge" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "A pull request has been created to bump the version:" >> $GITHUB_STEP_SUMMARY
-          echo "- **PR**: ${{ steps.create-pr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: ${{ steps.check-version-bump.outputs.current_version }} → ${{ steps.bump-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Review and merge the version bump PR" >> $GITHUB_STEP_SUMMARY
-          echo "2. Re-run this release workflow to continue with publishing" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "*The workflow will stop here until the PR is merged.*" >> $GITHUB_STEP_SUMMARY
-
-          # Exit with error to stop the workflow until PR is merged
-          exit 1
 
       - name: Run type check
         run: npm run type-check
@@ -185,72 +71,32 @@ jobs:
         run: npm install -g @vscode/vsce
 
       - name: Package extension
-        run: vsce package -o diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+        run: vsce package -o diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
 
       - name: Publish to VS Code Marketplace
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: vsce publish -p $VSCE_PAT --packagePath diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
-
-      - name: Create Git tag
-        run: |
-          git tag -a "v${{ steps.final-version.outputs.version }}" -m "Release v${{ steps.final-version.outputs.version }}"
-          git push origin "v${{ steps.final-version.outputs.version }}"
-
-      - name: Generate release notes
-        id: release-notes
-        run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-
-          if [ -z "$LAST_TAG" ]; then
-            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges)
-          else
-            CHANGES=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
-          fi
-
-          # Categorize changes
-          FEATURES=$(echo "$CHANGES" | grep -E "^- (feat|feature)" || echo "")
-          FIXES=$(echo "$CHANGES" | grep -E "^- fix" || echo "")
-          DOCS=$(echo "$CHANGES" | grep -E "^- docs" || echo "")
-          CHORES=$(echo "$CHANGES" | grep -E "^- (chore|build|ci)" || echo "")
-          OTHERS=$(echo "$CHANGES" | grep -vE "^- (feat|feature|fix|docs|chore|build|ci)" || echo "")
-
-          # Build release notes
-          NOTES="## What's Changed"
-
-          if [ -n "$FEATURES" ]; then
-            NOTES="$NOTES\n\n### ✨ Features\n$FEATURES"
-          fi
-
-          if [ -n "$FIXES" ]; then
-            NOTES="$NOTES\n\n### 🐛 Bug Fixes\n$FIXES"
-          fi
-
-          if [ -n "$DOCS" ]; then
-            NOTES="$NOTES\n\n### 📝 Documentation\n$DOCS"
-          fi
-
-          if [ -n "$CHORES" ]; then
-            NOTES="$NOTES\n\n### 🔧 Maintenance\n$CHORES"
-          fi
-
-          if [ -n "$OTHERS" ]; then
-            NOTES="$NOTES\n\n### Other Changes\n$OTHERS"
-          fi
-
-          # Save to file for GitHub Release
-          echo -e "$NOTES" > release-notes.md
-
-          echo "Generated release notes:"
-          cat release-notes.md
+        run: vsce publish -p $VSCE_PAT --packagePath diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.final-version.outputs.version }}
-          name: Release v${{ steps.final-version.outputs.version }}
-          body_path: release-notes.md
-          files: diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          name: Release ${{ needs.release-please.outputs.tag_name }}
+          body: |
+            ## What's Changed
+
+            This release was automatically created by [release-please](https://github.com/googleapis/release-please).
+
+            ### Installation
+
+            **From VS Code Marketplace:**
+            ```
+            code --install-extension hitclaw.diffy-explain-ai
+            ```
+
+            **Or download the VSIX file** from the assets below and install manually.
+          files: diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
           draft: false
           prerelease: false
         env:
@@ -259,8 +105,8 @@ jobs:
       - name: Upload VSIX artifact
         uses: actions/upload-artifact@v4
         with:
-          name: diffy-explain-ai-${{ steps.final-version.outputs.version }}
-          path: diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+          name: diffy-explain-ai-${{ needs.release-please.outputs.version }}
+          path: diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
           retention-days: 90
           if-no-files-found: error
 
@@ -268,11 +114,10 @@ jobs:
         run: |
           echo "## 🎉 Release Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Version**: v${{ steps.final-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Extension Package**: diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ needs.release-please.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Extension Package**: diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
           echo "- **Marketplace**: Published ✅" >> $GITHUB_STEP_SUMMARY
           echo "- **GitHub Release**: Created ✅" >> $GITHUB_STEP_SUMMARY
-          echo "- **Git Tag**: v${{ steps.final-version.outputs.version }} ✅" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Install" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
@@ -280,5 +125,5 @@ jobs:
           echo "code --install-extension hitclaw.diffy-explain-ai" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "# Or download VSIX from GitHub Release" >> $GITHUB_STEP_SUMMARY
-          echo "code --install-extension diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
+          echo "code --install-extension diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

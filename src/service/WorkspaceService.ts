@@ -143,6 +143,22 @@ export default class WorkspaceService extends EventEmitter {
     return value || "conventional";
   }
 
+  getCustomCommitPrompt() {
+    const value = this.getConfiguration().get("customCommitPrompt");
+    if (typeof value === "string" && value.trim()) {
+      return value;
+    }
+    // Default custom template if not set
+    return `Generate a commit message for the following git diff.
+
+Requirements:
+- Maximum subject length: {maxLength} characters
+- Use imperative mood
+- Be concise and clear{bodyInstructions}
+
+Return ONLY the commit message, no explanations.`;
+  }
+
   getIncludeCommitBody() {
     const value = this.getConfiguration().get("includeCommitBody");
     return value === true;

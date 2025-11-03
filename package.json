@@ -156,14 +156,21 @@
           "type": "string",
           "enum": [
             "conventional",
-            "gitmoji"
+            "gitmoji",
+            "custom"
           ],
           "enumDescriptions": [
             "Conventional Commits format: <type>[optional scope]: <description>",
-            "Gitmoji format with emoji prefixes: 🎨 :<emoji>: <description>"
+            "Gitmoji format with emoji prefixes: 🎨 :<emoji>: <description>",
+            "Custom user-defined format using a template with placeholders"
           ],
           "default": "conventional",
-          "markdownDescription": "Choose the commit message format style:\n\n- **conventional**: Standard Conventional Commits format (e.g., `feat: add new feature`)\n- **gitmoji**: Commits with emoji prefixes (e.g., `✨ feat: add new feature`)"
+          "markdownDescription": "Choose the commit message format style:\n\n- **conventional**: Standard Conventional Commits format (e.g., `feat: add new feature`)\n- **gitmoji**: Commits with emoji prefixes (e.g., `✨ feat: add new feature`)\n- **custom**: Fully customizable template with placeholders (configure via Custom Commit Prompt setting)"
+        },
+        "diffy-explain-ai.customCommitPrompt": {
+          "type": "string",
+          "default": "Generate a commit message for the following git diff.\n\nRequirements:\n- Maximum subject length: {maxLength} characters\n- Use imperative mood\n- Be concise and clear{bodyInstructions}\n\nReturn ONLY the commit message, no explanations.",
+          "markdownDescription": "Custom commit message generation prompt when **Commit Message Type** is set to `custom`. \n\nSupported placeholders:\n- `{maxLength}` - Maximum subject line length\n- `{bodyInstructions}` - Auto-filled based on Include Commit Body setting\n- `{locale}` - Language/locale for the message\n- `{diff}` - The actual git diff (automatically appended)\n\nExample template:\n```\nGenerate a {locale} commit message following our team convention:\n- Start with JIRA ticket: [PROJ-XXX]\n- Subject max {maxLength} chars\n- Include impact analysis{bodyInstructions}\n```"
         },
         "diffy-explain-ai.includeCommitBody": {
           "type": "boolean",

@@ -6,7 +6,7 @@
   <br>
 </h1>
 
-<h4 align="center">Generate Commit Message the changed code using git diff and <a href="https://openai.com/" target="_blank">OpenAI</a> in natural language .</h4>
+<h4 align="center">Generate Commit Message for the changed code using git diff and AI (<a href="https://openai.com/" target="_blank">OpenAI</a> or <a href="https://github.com/features/copilot" target="_blank">GitHub Copilot</a>) in natural language.</h4>
 <br>
 <p align="center">
 
@@ -33,14 +33,30 @@
 
 ## Key Features
 
-- Generate Commit Message.
+- Generate Commit Message using **OpenAI** or **VS Code Language Models (GitHub Copilot)**.
 - Explain Changes in Natural Language.
 - Directly Generate Commit Message to VScode git commit input box.
 - Copy to clipboard
+- Choose between OpenAI API or GitHub Copilot as your AI provider
 
 ## Configure
 
-Go to Settings > Diffy - Explains Git Changes > Enter Your Api Key from OpenAI [Go to API Key Page](https://beta.openai.com/account/api-keys)
+### Option 1: Using OpenAI (Default)
+
+1. Go to Settings > Diffy - Explains Git Changes
+2. Set **AI Service Provider** to `openai`
+3. Enter Your API Key from OpenAI [Go to API Key Page](https://beta.openai.com/account/api-keys)
+
+### Option 2: Using VS Code Language Models (GitHub Copilot)
+
+1. Go to Settings > Diffy - Explains Git Changes
+2. Set **AI Service Provider** to `vscode-lm`
+3. Ensure GitHub Copilot is installed and you are signed in
+4. Optionally select your preferred model:
+   - `copilot-gpt-4o` (default, recommended)
+   - `copilot-gpt-3.5-turbo`
+
+**Note:** Using VS Code Language Models requires an active GitHub Copilot subscription.
 
 ## Commands
 

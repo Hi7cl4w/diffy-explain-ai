@@ -177,11 +177,9 @@ export interface Repository {
 
   getObjectDetails(
     treeish: string,
-    path: string
+    path: string,
   ): Promise<{ mode: string; object: string; size: number }>;
-  detectObjectType(
-    object: string
-  ): Promise<{ mimetype: string; encoding?: string }>;
+  detectObjectType(object: string): Promise<{ mimetype: string; encoding?: string }>;
   buffer(ref: string, path: string): Promise<Buffer>;
   show(ref: string, path: string): Promise<string>;
   getCommit(ref: string): Promise<Commit>;
@@ -231,7 +229,7 @@ export interface Repository {
     remoteName?: string,
     branchName?: string,
     setUpstream?: boolean,
-    force?: ForcePushMode
+    force?: ForcePushMode,
   ): Promise<void>;
 
   blame(path: string): Promise<string>;
@@ -279,7 +277,7 @@ export interface PushErrorHandler {
     repository: Repository,
     remote: Remote,
     refspec: string,
-    error: Error & { gitErrorCode: GitErrorCodes }
+    error: Error & { gitErrorCode: GitErrorCodes },
   ): Promise<boolean>;
 }
 
@@ -307,9 +305,7 @@ export interface API {
   registerRemoteSourcePublisher(publisher: RemoteSourcePublisher): Disposable;
   registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable;
   registerCredentialsProvider(provider: CredentialsProvider): Disposable;
-  registerPostCommitCommandsProvider(
-    provider: PostCommitCommandsProvider
-  ): Disposable;
+  registerPostCommitCommandsProvider(provider: PostCommitCommandsProvider): Disposable;
   registerPushErrorHandler(handler: PushErrorHandler): Disposable;
 }
 

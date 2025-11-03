@@ -14,7 +14,7 @@
     "url": "https://github.com/Hi7cl4w/diffy-explain-ai.git"
   },
   "bugs": {
-    "url": "hhttps://github.com/Hi7cl4w/diffy-explain-ai/issues"
+    "url": "https://github.com/Hi7cl4w/diffy-explain-ai/issues"
   },
   "keywords": [
     "git",
@@ -92,10 +92,11 @@
           "type": "string",
           "enum": [
             "openai",
-            "vscode-lm"
+            "vscode-lm",
+            "gemini"
           ],
           "default": "vscode-lm",
-          "markdownDescription": "Select the AI service provider to use for generating commit messages. \n\n- **vscode-lm**: Use VS Code's built-in Language Model API (GitHub Copilot) - Default\n- **openai**: Use OpenAI API directly (requires API key)"
+          "markdownDescription": "Select the AI service provider to use for generating commit messages. \n\n- **vscode-lm**: Use VS Code's built-in Language Model API (GitHub Copilot) - Default\n- **openai**: Use OpenAI API directly (requires API key)\n- **gemini**: Use Google Gemini API (requires API key)"
         },
         "diffy-explain-ai.vscodeLmModel": {
           "type": "string",
@@ -137,6 +138,15 @@
           "type": "string",
           "default": "gpt-4-turbo",
           "markdownDescription": "OpenAI models to use for your prompts. [Documentation](https://beta.openai.com/docs/models/models). \n\n**If you face 400 Bad Request please make sure you are using the right model for your integration method.**"
+        },
+        "diffy-explain-ai.geminiApiKey": {
+          "type": "string",
+          "markdownDescription": "Enter your API key from Google AI Studio [Go to API Key Page](https://aistudio.google.com/app/apikey)"
+        },
+        "diffy-explain-ai.geminiModel": {
+          "type": "string",
+          "default": "gemini-2.0-flash-exp",
+          "markdownDescription": "Google Gemini models to use for your prompts. [Documentation](https://ai.google.dev/gemini-api/docs/models/gemini). \n\nPopular models:\n- **gemini-2.0-flash-exp**: Latest experimental model (fast and capable)\n- **gemini-1.5-pro**: High-capability model for complex tasks\n- **gemini-1.5-flash**: Fast and efficient model"
         },
         "diffy-explain-ai.temperature": {
           "type": "number",
@@ -227,17 +237,19 @@
     "@biomejs/biome": "2.3.2",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
+    "@types/node": "^22.19.0",
     "@types/vscode": "^1.105.0",
     "@vscode/test-electron": "^2.2.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "ts-loader": "^9.4.1",
     "typescript": "^4.9.3",
+    "undici-types": "^7.16.0",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.0"
   },
   "dependencies": {
+    "@google/genai": "^1.28.0",
     "axios": "^1.12.0",
     "axios-retry": "^3.5.0",
     "openai": "^4.7.0",

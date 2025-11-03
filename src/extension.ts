@@ -10,8 +10,8 @@ export function activate(context: vscode.ExtensionContext) {
   app.init();
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("diffy-explain-ai.explainDiffClipboard", async () => {
-      await app?.explainDiffToClipboard();
+    vscode.commands.registerCommand("diffy-explain-ai.explainDiffClipboard", () => {
+      return app?.explainDiffToClipboard();
     }),
   );
 
@@ -38,14 +38,14 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("diffy-explain-ai.generateCommitMessageClipboard", async () => {
-      await app?.generateCommitMessageToClipboard();
+    vscode.commands.registerCommand("diffy-explain-ai.generateCommitMessageClipboard", () => {
+      return app?.generateCommitMessageToClipboard();
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("diffy-explain-ai.explainAndPreview", async () => {
-      await app?.explainAndPreview();
+    vscode.commands.registerCommand("diffy-explain-ai.explainAndPreview", () => {
+      return app?.explainAndPreview();
     }),
   );
 }

@@ -16,7 +16,7 @@ class Diffy extends BaseDiffy {
   private _vsCodeLlmService: VsCodeLlmService | null = null;
   private workspaceService: WorkspaceService | null = null;
   isEnabled = false;
-  private _windowsService: any;
+  private _windowsService: WindowService | null = null;
   context!: ExtensionContext;
 
   constructor(context: ExtensionContext) {

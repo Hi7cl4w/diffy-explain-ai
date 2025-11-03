@@ -1,6 +1,8 @@
-export type CacheResult = any;
+import type OpenAI from "openai";
+
+export type CacheResult = string | OpenAI.Chat.Completions.ChatCompletion;
 export type CacheData = {
   entity: string;
-  data?: any;
-  result: any;
+  data?: string;
+  result: CacheResult;
 };

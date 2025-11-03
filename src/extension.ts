@@ -10,55 +10,43 @@ export function activate(context: vscode.ExtensionContext) {
   app.init();
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "diffy-explain-ai.explainDiffClipboard",
-      () => {
-        app?.explainDiffToClipboard();
-      }
-    )
+    vscode.commands.registerCommand("diffy-explain-ai.explainDiffClipboard", () => {
+      app?.explainDiffToClipboard();
+    }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "diffy-explain-ai.generateCommitMessage",
-      async () => {
-        vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            cancellable: false,
-            title: "Generating...\n",
-          },
-          async (progress) => {
-            progress.report({ increment: 0 });
+    vscode.commands.registerCommand("diffy-explain-ai.generateCommitMessage", async () => {
+      vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          cancellable: false,
+          title: "Generating...\n",
+        },
+        async (progress) => {
+          progress.report({ increment: 0 });
 
-            await app?.generateCommitMessageToSCM(progress);
+          await app?.generateCommitMessageToSCM(progress);
 
-            progress.report({
-              message: "Commit message generated.",
-              increment: 100,
-            });
-          }
-        );
-      }
-    )
+          progress.report({
+            message: "Commit message generated.",
+            increment: 100,
+          });
+        },
+      );
+    }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "diffy-explain-ai.generateCommitMessageClipboard",
-      () => {
-        app?.generateCommitMessageToClipboard();
-      }
-    )
+    vscode.commands.registerCommand("diffy-explain-ai.generateCommitMessageClipboard", () => {
+      app?.generateCommitMessageToClipboard();
+    }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "diffy-explain-ai.explainAndPreview",
-      () => {
-        app?.explainAndPreview();
-      }
-    )
+    vscode.commands.registerCommand("diffy-explain-ai.explainAndPreview", () => {
+      app?.explainAndPreview();
+    }),
   );
 }
 

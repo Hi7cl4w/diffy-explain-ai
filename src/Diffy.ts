@@ -1,9 +1,10 @@
-import * as vscode from "vscode";
-import { env, ExtensionContext } from "vscode";
+import type * as vscode from "vscode";
+import { type ExtensionContext, env } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
 import GitService from "./service/GitService";
 import OpenAiService from "./service/OpenAiService";
+import VsCodeLlmService from "./service/VsCodeLlmService";
 import WindowService from "./service/WindowService";
 import WorkspaceService from "./service/WorkspaceService";
 import { sendToOutput } from "./utils/log";
@@ -12,17 +13,18 @@ class Diffy extends BaseDiffy {
   static _instance: Diffy;
   private gitService: GitService | null = null;
   private _openAIService: OpenAiService | null = null;
+  private _vsCodeLlmService: VsCodeLlmService | null = null;
   private workspaceService: WorkspaceService | null = null;
   isEnabled = false;
   private _windowsService: any;
   context!: ExtensionContext;
 
   constructor(context: ExtensionContext) {
-    if (Diffy._instance) {
-      return Diffy._instance;
-    }
     super();
-    this.context = context;
+    if (!Diffy._instance) {
+      Diffy._instance = this;
+      this.context = context;
+    }
   }
 
   /**
@@ -57,6 +59,30 @@ class Diffy extends BaseDiffy {
     return this._openAIService;
   }
 
+  /**
+   * If the _vsCodeLlmService property is not defined, then create a new instance of the VsCodeLlmService
+   * class and assign it to the _vsCodeLlmService property.
+   * @returns The VsCodeLlmService object.
+   */
+  getVsCodeLlmService(): VsCodeLlmService {
+    if (!this._vsCodeLlmService) {
+      this._vsCodeLlmService = VsCodeLlmService.getInstance();
+    }
+    return this._vsCodeLlmService;
+  }
+
+  /**
+   * Gets the appropriate AI service based on user settings
+   * @returns The selected AI service (OpenAI or VS Code LLM)
+   */
+  getAIService(): AIService {
+    const provider = this.workspaceService?.getAiServiceProvider();
+    if (provider === "vscode-lm") {
+      return this.getVsCodeLlmService();
+    }
+    return this.getOpenAPIService();
+  }
+
   getWindowService(): WindowService {
     if (!this._windowsService) {
       this._windowsService = WindowService.getInstance();
@@ -71,11 +97,17 @@ class Diffy extends BaseDiffy {
     if (!this.gitService?.checkAndWarnRepoExist()) {
       return;
     }
-    /* Checking if the api key is defined. */
-    const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
+
+    const provider = this.workspaceService?.getAiServiceProvider();
+
+    // Check if API key is required (for OpenAI)
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
     }
+
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
@@ -94,19 +126,29 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    /* OpenAPI */
-    const changes = await this.getOpenAPIService().getExplainedChanges(
-      diff,
-      apiKey,
-      nameOnly
-    );
+
+    /* Get AI Service based on provider */
+    const aiService = this.getAIService();
+    let changes: string | null = null;
+
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await (aiService as OpenAiService).getExplainedChanges(diff, apiKey, nameOnly);
+    } else {
+      // VS Code LLM
+      changes = await aiService.getExplainedChanges("", diff);
+    }
+
     if (changes) {
       this.getWindowService().showExplainedResultWebviewPane(changes);
     }
   }
 
   /**
-   * It takes the code that you've changed in your current git branch, sends it to OpenAI's API, and
+   * It takes the code that you've changed in your current git branch, sends it to AI service, and
    * then copies the response to your clipboard
    * @returns The return value is a string.
    */
@@ -117,11 +159,17 @@ class Diffy extends BaseDiffy {
     if (!this.gitService?.checkAndWarnRepoExist()) {
       return;
     }
-    /* Checking if the api key is defined. */
-    const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
+
+    const provider = this.workspaceService?.getAiServiceProvider();
+
+    // Check if API key is required (for OpenAI)
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
     }
+
     /* Getting the current repo. */
     const repo = this.gitService?.getCurrentRepo();
     if (!repo) {
@@ -140,12 +188,22 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    /* OpenAPI */
-    const changes = await this.getOpenAPIService().getExplainedChanges(
-      diff,
-      apiKey,
-      nameOnly
-    );
+
+    /* Get AI Service based on provider */
+    const aiService = this.getAIService();
+    let changes: string | null = null;
+
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await (aiService as OpenAiService).getExplainedChanges(diff, apiKey, nameOnly);
+    } else {
+      // VS Code LLM
+      changes = await aiService.getExplainedChanges("", diff);
+    }
+
     /* Copying the changes to the clipboard and showing the changes in the message box. */
     if (changes) {
       env.clipboard.writeText(changes);
@@ -154,8 +212,8 @@ class Diffy extends BaseDiffy {
   }
 
   /**
-   * It takes the current git diff, sends it to OpenAI, and then copies the response to the clipboard.
-   * @returns The commit message.
+   * It takes the diff of the current branch, sends it to the AI service, and then copies the response to clipboard.
+   * @returns a promise.
    */
   async generateCommitMessageToClipboard() {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
@@ -164,10 +222,15 @@ class Diffy extends BaseDiffy {
     if (!this.gitService?.checkAndWarnRepoExist()) {
       return;
     }
-    /* Checking if the api key is defined. */
-    const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
+
+    const provider = this.workspaceService?.getAiServiceProvider();
+
+    // Check if API key is required (for OpenAI)
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
     }
 
     /* Getting the current repo. */
@@ -188,12 +251,21 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    /* OpenAPI */
-    const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-      diff,
-      apiKey,
-      nameOnly
-    );
+
+    /* Get AI Service based on provider */
+    let changes: string | null = null;
+
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await this.getOpenAPIService().getCommitMessageFromDiff(diff, apiKey, nameOnly);
+    } else {
+      // VS Code LLM
+      changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(diff, nameOnly);
+    }
+
     if (changes) {
       env.clipboard.writeText(changes);
       this.showInformationMessage(changes);
@@ -201,7 +273,7 @@ class Diffy extends BaseDiffy {
   }
 
   /**
-   * It takes the diff of the current branch, sends it to the OpenAI API, and then sets the commit
+   * It takes the diff of the current branch, sends it to the AI service, and then sets the commit
    * message to the input box
    * @returns a promise.
    */
@@ -209,7 +281,7 @@ class Diffy extends BaseDiffy {
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ) {
     if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
       return;
@@ -217,10 +289,15 @@ class Diffy extends BaseDiffy {
     if (!this.gitService?.checkAndWarnRepoExist()) {
       return;
     }
-    /* Checking if the api key is defined. */
-    const apiKey = this.workspaceService?.getOpenAIKey();
-    if (!apiKey) {
-      return;
+
+    const provider = this.workspaceService?.getAiServiceProvider();
+
+    // Check if API key is required (for OpenAI)
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
     }
 
     /* Getting the current repo. */
@@ -241,13 +318,26 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    /* OpenAPI */
-    const changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-      diff,
-      apiKey,
-      nameOnly,
-      progress
-    );
+
+    /* Get AI Service based on provider */
+    let changes: string | null = null;
+
+    if (provider === "openai") {
+      const apiKey = this.workspaceService?.getOpenAIKey();
+      if (!apiKey) {
+        return;
+      }
+      changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+        diff,
+        apiKey,
+        nameOnly,
+        progress,
+      );
+    } else {
+      // VS Code LLM
+      changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(diff, nameOnly, progress);
+    }
+
     if (changes) {
       /* Setting the commit message to the input box. */
       this.gitService?.setCommitMessageToInputBox(repo, changes);
@@ -261,6 +351,7 @@ class Diffy extends BaseDiffy {
     this.isEnabled = false;
     this.gitService = null;
     this._openAIService = null;
+    this._vsCodeLlmService = null;
     this.workspaceService = null;
   }
 }

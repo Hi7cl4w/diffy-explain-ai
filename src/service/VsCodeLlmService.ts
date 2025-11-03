@@ -9,10 +9,10 @@ class VsCodeLlmService implements AIService {
   cacheService!: CacheService;
 
   constructor() {
-    if (VsCodeLlmService._instance) {
-      return VsCodeLlmService._instance;
+    if (!VsCodeLlmService._instance) {
+      VsCodeLlmService._instance = this;
+      this.cacheService = CacheService.getInstance();
     }
-    this.cacheService = CacheService.getInstance();
   }
 
   /**
@@ -35,23 +35,19 @@ class VsCodeLlmService implements AIService {
    */
   async getCommitMessageFromDiff(
     code: string,
-    nameOnly?: boolean,
+    _nameOnly?: boolean,
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ): Promise<string | null> {
     const instructions = WorkspaceService.getInstance().getAIInstructions();
     if (!instructions) {
       return null;
     }
-    
-    const response = await this.getFromVsCodeLlm(
-      instructions,
-      code,
-      progress
-    );
-    
+
+    const response = await this.getFromVsCodeLlm(instructions, code, progress);
+
     if (response) {
       let message = response.trim();
       message = message.replace(/^"/gm, "");
@@ -67,16 +63,13 @@ class VsCodeLlmService implements AIService {
    * @param {string} string2 - the second parameter (diff code)
    * @returns The explanation of the git diff.
    */
-  async getExplainedChanges(
-    string1: string,
-    string2: string
-  ): Promise<string | null> {
+  async getExplainedChanges(_string1: string, string2: string): Promise<string | null> {
     const instructions =
       "You are a bot that explains the changes from the result of 'git diff --cached' that user given. commit message should be a multiple lines where first line doesn't exceed '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
-    
+
     // Use string2 as the code/diff, string1 is typically instructions but we use our own
     const response = await this.getFromVsCodeLlm(instructions, string2);
-    
+
     if (response) {
       let message = response.trim();
       message = message.replace(/^"/gm, "");
@@ -99,10 +92,10 @@ class VsCodeLlmService implements AIService {
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ): Promise<string | undefined> {
     const vscodeLmModel = WorkspaceService.getInstance().getVsCodeLmModel();
-    
+
     // Check cache
     const cacheKey = instructions + prompt;
     const exist = this.cacheService.recordExists(vscodeLmModel, cacheKey);
@@ -120,27 +113,27 @@ class VsCodeLlmService implements AIService {
 
       // Select the appropriate model based on settings
       let models: vscode.LanguageModelChat[] = [];
-      
+
       if (vscodeLmModel === "copilot-gpt-4o") {
         models = await vscode.lm.selectChatModels({
           vendor: "copilot",
-          family: "gpt-4o"
+          family: "gpt-4o",
         });
       } else if (vscodeLmModel === "copilot-gpt-3.5-turbo") {
         models = await vscode.lm.selectChatModels({
           vendor: "copilot",
-          family: "gpt-3.5-turbo"
+          family: "gpt-3.5-turbo",
         });
       } else {
         // Default: try to select any copilot model
         models = await vscode.lm.selectChatModels({
-          vendor: "copilot"
+          vendor: "copilot",
         });
       }
 
       if (models.length === 0) {
         window.showErrorMessage(
-          "No language models available. Please ensure GitHub Copilot is installed and you are signed in."
+          "No language models available. Please ensure GitHub Copilot is installed and you are signed in.",
         );
         progress?.report({
           increment: 1,
@@ -164,7 +157,7 @@ class VsCodeLlmService implements AIService {
       const chatResponse = await model.sendRequest(
         messages,
         {},
-        new vscode.CancellationTokenSource().token
+        new vscode.CancellationTokenSource().token,
       );
 
       progress?.report({ increment: 40 });
@@ -197,13 +190,14 @@ class VsCodeLlmService implements AIService {
       if (error instanceof vscode.LanguageModelError) {
         // Handle specific LLM errors
         let errorMessage = "VS Code Language Model Error: ";
-        
+
         switch (error.code) {
           case vscode.LanguageModelError.NotFound().code:
             errorMessage += "Model not found. Please ensure GitHub Copilot is installed.";
             break;
           case vscode.LanguageModelError.NoPermissions().code:
-            errorMessage += "No permissions to use the language model. Please sign in to GitHub Copilot.";
+            errorMessage +=
+              "No permissions to use the language model. Please sign in to GitHub Copilot.";
             break;
           case vscode.LanguageModelError.Blocked().code:
             errorMessage += "Request was blocked. The prompt may violate content policies.";
@@ -211,11 +205,11 @@ class VsCodeLlmService implements AIService {
           default:
             errorMessage += error.message;
         }
-        
+
         window.showErrorMessage(errorMessage);
       } else {
         window.showErrorMessage(
-          `Diffy Error: Failed to generate commit message. ${error.message || "Unknown error"}`
+          `Diffy Error: Failed to generate commit message. ${error.message || "Unknown error"}`,
         );
       }
 

@@ -94,8 +94,8 @@
             "openai",
             "vscode-lm"
           ],
-          "default": "openai",
-          "markdownDescription": "Select the AI service provider to use for generating commit messages. \n\n- **openai**: Use OpenAI API directly (requires API key)\n- **vscode-lm**: Use VS Code's built-in Language Model API (GitHub Copilot)"
+          "default": "vscode-lm",
+          "markdownDescription": "Select the AI service provider to use for generating commit messages. \n\n- **vscode-lm**: Use VS Code's built-in Language Model API (GitHub Copilot) - Default\n- **openai**: Use OpenAI API directly (requires API key)"
         },
         "diffy-explain-ai.vscodeLmModel": {
           "type": "string",

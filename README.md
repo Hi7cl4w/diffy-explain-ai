@@ -131,6 +131,14 @@ Follow my team's commit convention:
 - `diffy-explain-ai.generateCommitMessageClipboard` : Generate Commit Message and Copy to Clipboard
 - `diffy-explain-ai.explainAndPreview` : Explain and Preview Changes of Staged Files
 
+## Contributing & Development
+
+For contributors and maintainers:
+
+- **Release Process**: See [.github/RELEASE.md](.github/RELEASE.md) for detailed information about our automated release workflow
+- **CI/CD**: We use GitHub Actions for continuous integration and automated releases
+- **Code Quality**: All code must pass TypeScript type checking, Biome linting, and formatting before merging
+
 ## Support
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/manukn)

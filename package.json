@@ -5,7 +5,7 @@
   "version": "1.1.0",
   "publisher": "hitclaw",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.105.0"
   },
   "categories": [
     "SCM Providers"

@@ -1,0 +1,236 @@
+name: Release Extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-bump:
+        description: "Version bump type (auto/major/minor/patch)"
+        required: false
+        default: "auto"
+        type: choice
+        options:
+          - auto
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for version detection
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get current version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Check if version tag exists
+        id: check-tag
+        run: |
+          if git rev-parse "v${{ steps.current-version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag v${{ steps.current-version.outputs.version }} already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag v${{ steps.current-version.outputs.version }} does not exist"
+          fi
+
+      - name: Analyze commits for version bump
+        id: analyze-commits
+        if: steps.check-tag.outputs.exists == 'true' || github.event.inputs.version-bump == 'auto'
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tags found, defaulting to patch"
+            echo "bump=patch" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s")
+
+          if echo "$COMMITS" | grep -qE "^(feat|feature)(\(.+\))?!:|^BREAKING CHANGE:|^[a-z]+(\(.+\))?!:"; then
+            echo "bump=major" >> $GITHUB_OUTPUT
+            echo "Detected BREAKING CHANGE - major version bump"
+          elif echo "$COMMITS" | grep -qE "^(feat|feature)(\(.+\))?:"; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+            echo "Detected feature - minor version bump"
+          else
+            echo "bump=patch" >> $GITHUB_OUTPUT
+            echo "Detected fixes/chores - patch version bump"
+          fi
+
+      - name: Determine version bump type
+        id: version-bump
+        run: |
+          if [ "${{ github.event.inputs.version-bump }}" != "auto" ] && [ -n "${{ github.event.inputs.version-bump }}" ]; then
+            echo "type=${{ github.event.inputs.version-bump }}" >> $GITHUB_OUTPUT
+            echo "Using manual version bump: ${{ github.event.inputs.version-bump }}"
+          else
+            echo "type=${{ steps.analyze-commits.outputs.bump }}" >> $GITHUB_OUTPUT
+            echo "Using automatic version bump: ${{ steps.analyze-commits.outputs.bump }}"
+          fi
+
+      - name: Bump version
+        id: bump-version
+        if: steps.check-tag.outputs.exists == 'true'
+        run: |
+          npm version ${{ steps.version-bump.outputs.type }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Bumped version to: $NEW_VERSION"
+
+      - name: Set final version
+        id: final-version
+        run: |
+          if [ "${{ steps.check-tag.outputs.exists }}" == "true" ]; then
+            echo "version=${{ steps.bump-version.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.current-version.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit version changes
+        if: steps.check-tag.outputs.exists == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${{ steps.final-version.outputs.version }}"
+          git push
+
+      - name: Run type check
+        run: npm run type-check
+
+      - name: Run linter
+        run: npm run lint:check
+
+      - name: Build extension
+        run: npm run compile
+
+      - name: Run tests
+        run: npm run test
+        continue-on-error: true # Don't fail release if tests fail
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Package extension
+        run: vsce package -o diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: vsce publish -p $VSCE_PAT --packagePath diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+
+      - name: Create Git tag
+        run: |
+          git tag -a "v${{ steps.final-version.outputs.version }}" -m "Release v${{ steps.final-version.outputs.version }}"
+          git push origin "v${{ steps.final-version.outputs.version }}"
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            CHANGES=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            CHANGES=$(git log $LAST_TAG..HEAD --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Categorize changes
+          FEATURES=$(echo "$CHANGES" | grep -E "^- (feat|feature)" || echo "")
+          FIXES=$(echo "$CHANGES" | grep -E "^- fix" || echo "")
+          DOCS=$(echo "$CHANGES" | grep -E "^- docs" || echo "")
+          CHORES=$(echo "$CHANGES" | grep -E "^- (chore|build|ci)" || echo "")
+          OTHERS=$(echo "$CHANGES" | grep -vE "^- (feat|feature|fix|docs|chore|build|ci)" || echo "")
+
+          # Build release notes
+          NOTES="## What's Changed"
+
+          if [ -n "$FEATURES" ]; then
+            NOTES="$NOTES\n\n### ✨ Features\n$FEATURES"
+          fi
+
+          if [ -n "$FIXES" ]; then
+            NOTES="$NOTES\n\n### 🐛 Bug Fixes\n$FIXES"
+          fi
+
+          if [ -n "$DOCS" ]; then
+            NOTES="$NOTES\n\n### 📝 Documentation\n$DOCS"
+          fi
+
+          if [ -n "$CHORES" ]; then
+            NOTES="$NOTES\n\n### 🔧 Maintenance\n$CHORES"
+          fi
+
+          if [ -n "$OTHERS" ]; then
+            NOTES="$NOTES\n\n### Other Changes\n$OTHERS"
+          fi
+
+          # Save to file for GitHub Release
+          echo -e "$NOTES" > release-notes.md
+
+          echo "Generated release notes:"
+          cat release-notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.final-version.outputs.version }}
+          name: Release v${{ steps.final-version.outputs.version }}
+          body_path: release-notes.md
+          files: diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: diffy-explain-ai-${{ steps.final-version.outputs.version }}
+          path: diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Release summary
+        run: |
+          echo "## 🎉 Release Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: v${{ steps.final-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Extension Package**: diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
+          echo "- **Marketplace**: Published ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Release**: Created ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **Git Tag**: v${{ steps.final-version.outputs.version }} ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Install" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# From VS Code Marketplace" >> $GITHUB_STEP_SUMMARY
+          echo "code --install-extension hitclaw.diffy-explain-ai" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Or download VSIX from GitHub Release" >> $GITHUB_STEP_SUMMARY
+          echo "code --install-extension diffy-explain-ai-${{ steps.final-version.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

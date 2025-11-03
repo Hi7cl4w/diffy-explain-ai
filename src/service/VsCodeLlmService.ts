@@ -36,7 +36,7 @@ class VsCodeLlmService implements AIService {
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ): Promise<string | null> {
     const workspaceService = WorkspaceService.getInstance();
     const commitType = workspaceService.getCommitMessageType();
@@ -96,11 +96,7 @@ REQUIREMENTS:
           : ""
       }
 
-${
-  customInstructions
-    ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n`
-    : ""
-}
+${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : ""}
 
 Return ONLY the commit message, no explanations or surrounding text.`;
     } else {
@@ -137,21 +133,13 @@ REQUIREMENTS:
           : ""
       }
 
-${
-  customInstructions
-    ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n`
-    : ""
-}
+${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : ""}
 
 Return ONLY the commit message, no explanations or surrounding text.`;
     }
 
     try {
-      const response = await this.getFromVsCodeLlm(
-        instructions,
-        code,
-        progress
-      );
+      const response = await this.getFromVsCodeLlm(instructions, code, progress);
 
       if (response) {
         let message = response.trim();
@@ -172,10 +160,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
    * @param {string} string2 - the second parameter (diff code)
    * @returns The explanation of the git diff.
    */
-  async getExplainedChanges(
-    _string1: string,
-    string2: string
-  ): Promise<string | null> {
+  async getExplainedChanges(_string1: string, string2: string): Promise<string | null> {
     const instructions =
       "You are a bot that explains the changes from the result of 'git diff --cached' that user given. commit message should be a multiple lines where first line doesn't exceed '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
 
@@ -209,7 +194,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ): Promise<string | undefined> {
     const vscodeLmModel = WorkspaceService.getInstance().getVsCodeLmModel();
 
@@ -360,7 +345,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
         // If still no models available, show a more specific error
         if (models.length === 0) {
           window.showErrorMessage(
-            "No GitHub Copilot models available. Please ensure GitHub Copilot is installed, enabled, and you have an active subscription."
+            "No GitHub Copilot models available. Please ensure GitHub Copilot is installed, enabled, and you have an active subscription.",
           );
           progress?.report({
             increment: 1,
@@ -372,7 +357,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
 
       if (models.length === 0) {
         window.showErrorMessage(
-          "No language models available. Please ensure GitHub Copilot is installed and you are signed in."
+          "No language models available. Please ensure GitHub Copilot is installed and you are signed in.",
         );
         progress?.report({
           increment: 1,
@@ -382,22 +367,18 @@ Return ONLY the commit message, no explanations or surrounding text.`;
       }
 
       const [model] = models;
-      sendToOutput(
-        `Selected model: ${model.id} (${model.vendor}/${model.family})`
-      );
+      sendToOutput(`Selected model: ${model.id} (${model.vendor}/${model.family})`);
 
       progress?.report({ increment: 30 });
 
       // Prepare messages - try a simpler format that should be more compatible
-      const messages = [
-        vscode.LanguageModelChatMessage.User(`${instructions}\n\n${prompt}`),
-      ];
+      const messages = [vscode.LanguageModelChatMessage.User(`${instructions}\n\n${prompt}`)];
 
       // Send request with minimal options
       const chatResponse = await model.sendRequest(
         messages,
         {},
-        new vscode.CancellationTokenSource().token
+        new vscode.CancellationTokenSource().token,
       );
 
       progress?.report({ increment: 40 });
@@ -433,16 +414,14 @@ Return ONLY the commit message, no explanations or surrounding text.`;
 
         switch (error.code) {
           case vscode.LanguageModelError.NotFound().code:
-            errorMessage +=
-              "Model not found. Please ensure GitHub Copilot is installed.";
+            errorMessage += "Model not found. Please ensure GitHub Copilot is installed.";
             break;
           case vscode.LanguageModelError.NoPermissions().code:
             errorMessage +=
               "No permissions to use the language model. Please sign in to GitHub Copilot.";
             break;
           case vscode.LanguageModelError.Blocked().code:
-            errorMessage +=
-              "Request was blocked. The prompt may violate content policies.";
+            errorMessage += "Request was blocked. The prompt may violate content policies.";
             break;
           default:
             errorMessage += error.message;
@@ -467,10 +446,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
             const jsonMatch = error.message.match(/\{.*\}/);
             if (jsonMatch) {
               const errorJson = JSON.parse(jsonMatch[0]);
-              if (
-                errorJson.error &&
-                errorJson.error.code === "model_not_supported"
-              ) {
+              if (errorJson.error && errorJson.error.code === "model_not_supported") {
                 isModelNotSupported = true;
                 // Use the actual error message from the LLM
                 if (errorJson.error.message) {
@@ -486,17 +462,15 @@ Return ONLY the commit message, no explanations or surrounding text.`;
 
         if (isModelNotSupported) {
           window.showErrorMessage(
-            `Diffy Error: The selected language model doesn't support this type of request. Try switching to a different model in settings or use OpenAI instead. LLM Error: ${actualErrorMessage}`
+            `Diffy Error: The selected language model doesn't support this type of request. Try switching to a different model in settings or use OpenAI instead. LLM Error: ${actualErrorMessage}`,
           );
         } else {
           window.showErrorMessage(
-            `Diffy Error: Failed to generate commit message. ${error.message}`
+            `Diffy Error: Failed to generate commit message. ${error.message}`,
           );
         }
       } else {
-        window.showErrorMessage(
-          "Diffy Error: Failed to generate commit message. Unknown error"
-        );
+        window.showErrorMessage("Diffy Error: Failed to generate commit message. Unknown error");
       }
 
       progress?.report({

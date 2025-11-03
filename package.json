@@ -91,6 +91,24 @@
     "configuration": {
       "type": "object",
       "properties": {
+        "diffy-explain-ai.aiServiceProvider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "vscode-lm"
+          ],
+          "default": "openai",
+          "markdownDescription": "Select the AI service provider to use for generating commit messages. \n\n- **openai**: Use OpenAI API directly (requires API key)\n- **vscode-lm**: Use VS Code's built-in Language Model API (GitHub Copilot)"
+        },
+        "diffy-explain-ai.vscodeLmModel": {
+          "type": "string",
+          "enum": [
+            "copilot-gpt-4o",
+            "copilot-gpt-3.5-turbo"
+          ],
+          "default": "copilot-gpt-4o",
+          "markdownDescription": "Select the VS Code Language Model to use when `aiServiceProvider` is set to `vscode-lm`. Requires GitHub Copilot subscription."
+        },
         "diffy-explain-ai.proxyUrl": {
           "type": "string",
           "default": "",
@@ -130,10 +148,14 @@
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
-    "lint": "eslint src --ext ts",
+    "lint": "biome check --write .",
+    "lint:check": "biome check .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.2",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",

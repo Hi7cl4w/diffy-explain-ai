@@ -104,6 +104,22 @@ export default class WorkspaceService extends EventEmitter {
     return value;
   }
 
+  getGeminiKey() {
+    const value = String(this.getConfiguration().get("geminiApiKey"));
+    if (!value) {
+      this.showErrorMessage(
+        "Your Google Gemini API Key is missing; kindly input it within the Diffy Settings section. You can generate a key by visiting Google AI Studio.",
+      );
+      return null;
+    }
+    return value;
+  }
+
+  getGeminiModel() {
+    const value = String(this.getConfiguration().get("geminiModel"));
+    return value || "gemini-2.0-flash-exp";
+  }
+
   getProxyUrl() {
     const value = this.getConfiguration().get("proxyUrl")
       ? String(this.getConfiguration().get("proxyUrl"))

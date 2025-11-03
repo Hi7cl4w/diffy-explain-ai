@@ -100,9 +100,11 @@ class GitService {
     if (!diff) {
       if (cached) {
         const diffUncached = await repo.diff(false);
-        diffUncached
-          ? this.showInformationMessage("warning: please stage your git changes")
-          : this.showInformationMessage("No Changes");
+        if (diffUncached) {
+          this.showInformationMessage("warning: please stage your git changes");
+        } else {
+          this.showInformationMessage("No Changes");
+        }
         return null;
       }
       this.showInformationMessage("No changes");

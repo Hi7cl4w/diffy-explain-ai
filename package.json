@@ -10,9 +10,6 @@
   "categories": [
     "SCM Providers"
   ],
-  "activationEvents": [
-    "onCommand:diffy-explain-ai.generateCommitMessage"
-  ],
   "repository": {
     "url": "https://github.com/Hi7cl4w/diffy-explain-ai.git"
   },

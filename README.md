@@ -34,6 +34,10 @@
 ## Key Features
 
 - Generate Commit Message using **OpenAI** or **VS Code Language Models (GitHub Copilot)**.
+- **Intelligent Code Indexing**: Automatically filters out irrelevant files (lock files, images, etc.) to improve AI analysis quality and reduce token usage.
+- **Customizable Commit Formats**: Choose between Conventional Commits or Gitmoji styles.
+- **Configurable Message Length**: Set maximum subject line length (50-200 characters).
+- **Optional Detailed Bodies**: Include explanatory bullet points in commit messages.
 - Explain Changes in Natural Language.
 - Directly Generate Commit Message to VScode git commit input box.
 - Copy to clipboard
@@ -57,6 +61,68 @@
    - `copilot-gpt-3.5-turbo`
 
 **Note:** Using VS Code Language Models requires an active GitHub Copilot subscription.
+
+## Advanced Configuration
+
+### Commit Message Customization
+
+#### Commit Format Style
+Choose between two popular commit message formats:
+- **Conventional Commits** (default): `feat: add user authentication`
+- **Gitmoji**: `✨ feat: add user authentication`
+
+Set in: `Settings > Diffy > Commit Message Type`
+
+#### Include Commit Body
+Enable detailed commit messages with explanatory bullet points:
+```
+feat: add user authentication
+
+- Implement JWT token generation
+- Add login and registration endpoints
+- Create user model and database schema
+```
+
+Set in: `Settings > Diffy > Include Commit Body`
+
+#### Maximum Subject Line Length
+Configure the maximum character length for commit subjects (default: 72)
+- **50**: Strict GitHub standard
+- **72**: Common standard (recommended)
+- **100**: Relaxed limit
+
+Set in: `Settings > Diffy > Max Commit Message Length`
+
+### File Filtering
+
+Exclude specific files or patterns from AI analysis to improve quality and reduce token usage:
+
+**Default exclusions:**
+- Lock files: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`
+- Images: `*.jpg`, `*.png`, `*.gif`, `*.svg`, `*.ico`
+- Fonts: `*.woff`, `*.woff2`, `*.ttf`, `*.eot`
+
+**Add custom exclusions:**
+Set in: `Settings > Diffy > Exclude Files From Diff`
+
+Example patterns:
+- `*.min.js` - Exclude minified JavaScript
+- `dist/**` - Exclude build directory
+- `**/*.log` - Exclude all log files
+
+### Custom AI Instructions
+
+Override the default prompt with your own instructions for commit message generation:
+
+Set in: `Settings > Diffy > AI Instructions`
+
+Example:
+```
+Follow my team's commit convention:
+- Use JIRA ticket numbers in scope
+- Always include "BREAKING CHANGE" footer when applicable
+- Mention affected services
+```
 
 ## Commands
 

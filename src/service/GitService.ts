@@ -2,6 +2,7 @@ import simpleGit from "simple-git";
 import { type Extension, extensions, window } from "vscode";
 import type { API as GitApi, GitExtension, Repository } from "../@types/git";
 import { CONSTANTS } from "../Constants";
+import WorkspaceService from "./WorkspaceService";
 
 class GitService {
   static _instance: GitService;
@@ -113,6 +114,67 @@ class GitService {
   }
 
   /**
+   * Check if a file path matches any of the exclusion patterns
+   * @param filePath - The file path to check
+   * @param patterns - Array of glob patterns to match against
+   * @returns true if the file should be excluded
+   */
+  private shouldExcludeFile(filePath: string, patterns: string[]): boolean {
+    for (const pattern of patterns) {
+      // Simple glob pattern matching
+      if (pattern.includes("*")) {
+        const regex = new RegExp(
+          `^${pattern.replace(/\./g, "\\.").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+        );
+        if (regex.test(filePath)) {
+          return true;
+        }
+      } else if (filePath.includes(pattern)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Filter diff output to exclude specified file patterns
+   * @param diff - The raw git diff output
+   * @param excludePatterns - Patterns to exclude
+   * @returns Filtered diff output
+   */
+  private filterDiffByExclusions(diff: string, excludePatterns: string[]): string {
+    if (!excludePatterns || excludePatterns.length === 0) {
+      return diff;
+    }
+
+    // Split diff into file sections (each starts with "diff --git")
+    const fileSections = diff.split(/(?=diff --git)/);
+    const filteredSections: string[] = [];
+
+    for (const section of fileSections) {
+      if (!section.trim()) {
+        continue;
+      }
+
+      // Extract file path from the diff header
+      // Format: "diff --git a/path/to/file b/path/to/file"
+      const fileMatch = section.match(/diff --git a\/(.+?) b\//);
+      if (!fileMatch) {
+        // Keep sections we can't parse
+        filteredSections.push(section);
+        continue;
+      }
+
+      const filePath = fileMatch[1];
+      if (!this.shouldExcludeFile(filePath, excludePatterns)) {
+        filteredSections.push(section);
+      }
+    }
+
+    return filteredSections.join("");
+  }
+
+  /**
    * Get the diff in the git repository.
    * @returns The diff object is being returned.
    */
@@ -120,12 +182,21 @@ class GitService {
     // let diff = await repo.diff(cached);
     const git = simpleGit(repo.rootUri.fsPath);
     let diff: string | null = "";
+
+    // Get exclusion patterns from settings
+    const excludePatterns = WorkspaceService.getInstance().getExcludeFilesFromDiff();
+
     if (!nameOnly) {
       diff = await git.diff(["--cached"]).catch((error) => {
         this.showErrorMessage("git repository not found");
         console.error(error);
         return null;
       });
+
+      // Apply file filtering if diff was successful
+      if (diff && excludePatterns.length > 0) {
+        diff = this.filterDiffByExclusions(diff, excludePatterns);
+      }
     } else {
       diff = await git.diff(["--cached", "--name-status"]).catch((error) => {
         this.showErrorMessage("git repository not found");

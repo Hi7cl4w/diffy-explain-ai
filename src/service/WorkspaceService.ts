@@ -85,7 +85,7 @@ export default class WorkspaceService extends EventEmitter {
 
   getVsCodeLmModel() {
     const value = String(this.getConfiguration().get("vscodeLmModel"));
-    return value || "copilot-gpt-4o";
+    return value || "auto";
   }
 
   getOpenAIKey() {
@@ -136,6 +136,43 @@ export default class WorkspaceService extends EventEmitter {
       ? Number(this.getConfiguration().get("maxTokens"))
       : undefined;
     return value;
+  }
+
+  getCommitMessageType() {
+    const value = String(this.getConfiguration().get("commitMessageType"));
+    return value || "conventional";
+  }
+
+  getIncludeCommitBody() {
+    const value = this.getConfiguration().get("includeCommitBody");
+    return value === true;
+  }
+
+  getExcludeFilesFromDiff(): string[] {
+    const value = this.getConfiguration().get("excludeFilesFromDiff");
+    if (Array.isArray(value)) {
+      return value;
+    }
+    // Default exclusions
+    return [
+      "package-lock.json",
+      "yarn.lock",
+      "pnpm-lock.yaml",
+      "*.jpg",
+      "*.png",
+      "*.gif",
+      "*.svg",
+      "*.ico",
+      "*.woff",
+      "*.woff2",
+      "*.ttf",
+      "*.eot",
+    ];
+  }
+
+  getMaxCommitMessageLength() {
+    const value = this.getConfiguration().get("maxCommitMessageLength");
+    return typeof value === "number" ? value : 72;
   }
 
   /**

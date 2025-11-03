@@ -100,11 +100,29 @@
         "diffy-explain-ai.vscodeLmModel": {
           "type": "string",
           "enum": [
+            "auto",
             "copilot-gpt-4o",
-            "copilot-gpt-3.5-turbo"
+            "copilot-gpt-4",
+            "copilot-gpt-4-turbo",
+            "copilot-gpt-3.5-turbo",
+            "copilot-gpt-3.5",
+            "copilot-o1",
+            "copilot-o1-mini",
+            "copilot-o1-preview"
           ],
-          "default": "copilot-gpt-4o",
-          "markdownDescription": "Select the VS Code Language Model to use when `aiServiceProvider` is set to `vscode-lm`. Requires GitHub Copilot subscription."
+          "enumDescriptions": [
+            "Automatically selects the best available model (recommended)",
+            "GitHub Copilot GPT-4o model - Latest and most capable",
+            "GitHub Copilot GPT-4 model - High capability model",
+            "GitHub Copilot GPT-4 Turbo model - Fast and capable",
+            "GitHub Copilot GPT-3.5 Turbo model - Fast and efficient",
+            "GitHub Copilot GPT-3.5 model - Standard capability",
+            "GitHub Copilot o1 model - Advanced reasoning model",
+            "GitHub Copilot o1-mini model - Compact reasoning model",
+            "GitHub Copilot o1-preview model - Preview of o1 capabilities"
+          ],
+          "default": "auto",
+          "markdownDescription": "Select the VS Code Language Model to use when `aiServiceProvider` is set to `vscode-lm`. Requires GitHub Copilot subscription. \n\nAvailable models may vary based on your Copilot subscription tier:\n\n- **auto**: Automatically selects the best available model\n- **copilot-gpt-4o**: Latest GPT-4o model (recommended for most users)\n- **copilot-gpt-4**: GPT-4 model with high reasoning capabilities\n- **copilot-gpt-4-turbo**: Fast GPT-4 Turbo model\n- **copilot-gpt-3.5-turbo**: Fast and efficient GPT-3.5 Turbo\n- **copilot-gpt-3.5**: Standard GPT-3.5 model\n- **copilot-o1**: Advanced o1 reasoning model (may require higher tier)\n- **copilot-o1-mini**: Compact o1-mini model\n- **copilot-o1-preview**: Preview access to o1 capabilities"
         },
         "diffy-explain-ai.proxyUrl": {
           "type": "string",
@@ -133,6 +151,52 @@
         "diffy-explain-ai.aiInstructions": {
           "type": "string",
           "default": "Analyze the provided git diff --staged output, categorize the changes into a conventional commit type (e.g., feat, fix, docs, chore,style), determine if a scope is applicable, and then synthesize a concise commit message that follows the format  <type>[optional scope]: <description> [optional body] [optional footer(s)]"
+        },
+        "diffy-explain-ai.commitMessageType": {
+          "type": "string",
+          "enum": [
+            "conventional",
+            "gitmoji"
+          ],
+          "enumDescriptions": [
+            "Conventional Commits format: <type>[optional scope]: <description>",
+            "Gitmoji format with emoji prefixes: 🎨 :<emoji>: <description>"
+          ],
+          "default": "conventional",
+          "markdownDescription": "Choose the commit message format style:\n\n- **conventional**: Standard Conventional Commits format (e.g., `feat: add new feature`)\n- **gitmoji**: Commits with emoji prefixes (e.g., `✨ feat: add new feature`)"
+        },
+        "diffy-explain-ai.includeCommitBody": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Include a detailed body section in commit messages with bullet points explaining the changes. When enabled, commit messages will have:\n\n```\nfeat: add user authentication\n\n- Implement JWT token generation\n- Add login and registration endpoints\n- Create user model and database schema\n```"
+        },
+        "diffy-explain-ai.excludeFilesFromDiff": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "package-lock.json",
+            "yarn.lock",
+            "pnpm-lock.yaml",
+            "*.jpg",
+            "*.png",
+            "*.gif",
+            "*.svg",
+            "*.ico",
+            "*.woff",
+            "*.woff2",
+            "*.ttf",
+            "*.eot"
+          ],
+          "markdownDescription": "File patterns to exclude from AI analysis when generating commit messages. This helps reduce token usage and improve quality by filtering out:\n\n- Lock files (package-lock.json, yarn.lock)\n- Large binary assets (images, fonts)\n- Generated files\n\nSupports glob patterns like `*.log`, `dist/**`, `**/*.min.js`"
+        },
+        "diffy-explain-ai.maxCommitMessageLength": {
+          "type": "number",
+          "default": 72,
+          "minimum": 50,
+          "maximum": 200,
+          "markdownDescription": "Maximum character length for commit message subject line. Following best practices:\n\n- **50**: Strict GitHub standard\n- **72**: Common standard (default)\n- **100**: Relaxed limit"
         }
       }
     }

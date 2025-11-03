@@ -38,9 +38,84 @@ class VsCodeLlmService implements AIService {
       increment?: number | undefined;
     }>,
   ): Promise<string | null> {
-    const instructions = WorkspaceService.getInstance().getAIInstructions();
-    if (!instructions) {
-      return null;
+    const workspaceService = WorkspaceService.getInstance();
+    const commitType = workspaceService.getCommitMessageType();
+    const includeBody = workspaceService.getIncludeCommitBody();
+    const maxLength = workspaceService.getMaxCommitMessageLength();
+    const customInstructions = workspaceService.getAIInstructions();
+
+    // Build enhanced prompt based on commit type and settings
+    let instructions = "";
+
+    if (commitType === "gitmoji") {
+      instructions = `You are an expert Git commit message generator that uses Gitmoji (emoji-based commits).
+
+Analyze the provided git diff and generate a commit message following the Gitmoji specification:
+
+FORMAT: <emoji> <type>[optional scope]: <description>
+
+Common Gitmoji mappings:
+- ✨ :sparkles: - New feature (feat)
+- 🐛 :bug: - Bug fix (fix)
+- 📝 :memo: - Documentation (docs)
+- 💄 :lipstick: - UI/styling (style)
+- ♻️ :recycle: - Code refactoring (refactor)
+- ⚡️ :zap: - Performance improvement (perf)
+- ✅ :white_check_mark: - Tests (test)
+- 🔧 :wrench: - Configuration (chore)
+- 🔨 :hammer: - Build/tooling (build)
+- 🚀 :rocket: - Deployment (ci)
+
+REQUIREMENTS:
+1. Subject line must NOT exceed ${maxLength} characters
+2. Use imperative mood (e.g., "add" not "added")
+3. Do not end subject with a period
+4. Start with the appropriate emoji${
+        includeBody
+          ? "\n5. Include a body section with 2-4 bullet points explaining key changes"
+          : ""
+      }
+
+${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : ""}
+
+Return ONLY the commit message, no explanations or surrounding text.`;
+    } else {
+      // Conventional Commits format
+      instructions = `You are an expert Git commit message generator following Conventional Commits specification.
+
+Analyze the provided git diff and generate a commit message following this format:
+
+<type>[optional scope]: <description>
+${includeBody ? "\n[optional body]\n" : ""}
+[optional footer(s)]
+
+COMMIT TYPES:
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- style: Changes that don't affect code meaning (formatting, missing semicolons, etc.)
+- refactor: Code change that neither fixes a bug nor adds a feature
+- perf: Code change that improves performance
+- test: Adding missing tests or correcting existing tests
+- build: Changes to build system or external dependencies
+- ci: Changes to CI configuration files and scripts
+- chore: Other changes that don't modify src or test files
+- revert: Reverts a previous commit
+
+REQUIREMENTS:
+1. Subject line must NOT exceed ${maxLength} characters
+2. Use imperative mood (e.g., "add" not "added")
+3. Do not capitalize first letter after type
+4. Do not end subject with a period
+5. Choose the most specific scope when applicable (e.g., "auth", "api", "ui")${
+        includeBody
+          ? "\n6. Include a body section with 2-4 bullet points explaining:\n   - What changed\n   - Why it changed\n   - Any important implementation details"
+          : ""
+      }
+
+${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : ""}
+
+Return ONLY the commit message, no explanations or surrounding text.`;
     }
 
     const response = await this.getFromVsCodeLlm(instructions, code, progress);
@@ -111,16 +186,108 @@ class VsCodeLlmService implements AIService {
       // Select the appropriate model based on settings
       let models: vscode.LanguageModelChat[] = [];
 
-      if (vscodeLmModel === "copilot-gpt-4o") {
+      if (vscodeLmModel === "auto") {
+        // Try to select the best available model in order of preference
+        const preferredFamilies = [
+          "gpt-4o",
+          "o1",
+          "gpt-4",
+          "gpt-4-turbo",
+          "o1-mini",
+          "gpt-3.5-turbo",
+          "o1-preview",
+          "gpt-3.5",
+        ];
+        for (const family of preferredFamilies) {
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: family,
+          });
+          if (models.length > 0) {
+            break;
+          }
+        }
+        // If no specific family models found, try any copilot model
+        if (models.length === 0) {
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+          });
+        }
+      } else if (vscodeLmModel === "copilot-gpt-4o") {
         models = await vscode.lm.selectChatModels({
           vendor: "copilot",
           family: "gpt-4o",
         });
+        if (models.length === 0) {
+          // Fallback to any GPT-4 model
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "gpt-4",
+          });
+        }
+      } else if (vscodeLmModel === "copilot-gpt-4") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "gpt-4",
+        });
+      } else if (vscodeLmModel === "copilot-gpt-4-turbo") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "gpt-4-turbo",
+        });
+        if (models.length === 0) {
+          // Fallback to any GPT-4 model
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "gpt-4",
+          });
+        }
       } else if (vscodeLmModel === "copilot-gpt-3.5-turbo") {
         models = await vscode.lm.selectChatModels({
           vendor: "copilot",
           family: "gpt-3.5-turbo",
         });
+        if (models.length === 0) {
+          // Fallback to any GPT-3.5 model
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "gpt-3.5",
+          });
+        }
+      } else if (vscodeLmModel === "copilot-gpt-3.5") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "gpt-3.5",
+        });
+      } else if (vscodeLmModel === "copilot-o1") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "o1",
+        });
+      } else if (vscodeLmModel === "copilot-o1-mini") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "o1-mini",
+        });
+        if (models.length === 0) {
+          // Fallback to o1
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "o1",
+          });
+        }
+      } else if (vscodeLmModel === "copilot-o1-preview") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "o1-preview",
+        });
+        if (models.length === 0) {
+          // Fallback to o1
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+            family: "o1",
+          });
+        }
       } else {
         // Default: try to select any copilot model
         models = await vscode.lm.selectChatModels({
@@ -144,13 +311,10 @@ class VsCodeLlmService implements AIService {
 
       progress?.report({ increment: 30 });
 
-      // Prepare messages
-      const messages = [
-        vscode.LanguageModelChatMessage.User(instructions),
-        vscode.LanguageModelChatMessage.User(prompt),
-      ];
+      // Prepare messages - try a simpler format that should be more compatible
+      const messages = [vscode.LanguageModelChatMessage.User(`${instructions}\n\n${prompt}`)];
 
-      // Send request
+      // Send request with minimal options
       const chatResponse = await model.sendRequest(
         messages,
         {},
@@ -205,7 +369,19 @@ class VsCodeLlmService implements AIService {
 
         window.showErrorMessage(errorMessage);
       } else if (error instanceof Error) {
-        window.showErrorMessage(`Diffy Error: Failed to generate commit message. ${error.message}`);
+        // Handle the specific "model_not_supported" error
+        if (
+          error.message.includes("model_not_supported") ||
+          error.message.includes("Model is not supported")
+        ) {
+          window.showErrorMessage(
+            "Diffy Error: The selected language model doesn't support this type of request. Try switching to a different model in settings or use OpenAI instead.",
+          );
+        } else {
+          window.showErrorMessage(
+            `Diffy Error: Failed to generate commit message. ${error.message}`,
+          );
+        }
       } else {
         window.showErrorMessage("Diffy Error: Failed to generate commit message. Unknown error");
       }

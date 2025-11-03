@@ -1,4 +1,4 @@
-import type * as vscode from "vscode";
+import * as vscode from "vscode";
 import { type ExtensionContext, env } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
@@ -138,8 +138,32 @@ class Diffy extends BaseDiffy {
       }
       changes = await (aiService as OpenAiService).getExplainedChanges(diff, apiKey, nameOnly);
     } else {
-      // VS Code LLM
-      changes = await aiService.getExplainedChanges("", diff);
+      // VS Code LLM - try with fallback to OpenAI if it fails
+      try {
+        changes = await aiService.getExplainedChanges("", diff);
+      } catch (error) {
+        // If VS Code LM fails with model not supported error, try OpenAI as fallback
+        if (
+          error instanceof Error &&
+          (error.message.includes("model_not_supported") ||
+            error.message.includes("Model is not supported"))
+        ) {
+          vscode.window.showInformationMessage(
+            "VS Code Language Model not supported for this request. Falling back to OpenAI...",
+          );
+          const apiKey = this.workspaceService?.getOpenAIKey();
+          if (apiKey) {
+            changes = await this.getOpenAPIService().getExplainedChanges(diff, apiKey, nameOnly);
+          } else {
+            vscode.window.showErrorMessage(
+              "VS Code Language Model failed and no OpenAI API key configured. Please configure OpenAI API key in settings.",
+            );
+            return;
+          }
+        } else {
+          throw error; // Re-throw other errors
+        }
+      }
     }
 
     if (changes) {
@@ -200,8 +224,32 @@ class Diffy extends BaseDiffy {
       }
       changes = await (aiService as OpenAiService).getExplainedChanges(diff, apiKey, nameOnly);
     } else {
-      // VS Code LLM
-      changes = await aiService.getExplainedChanges("", diff);
+      // VS Code LLM - try with fallback to OpenAI if it fails
+      try {
+        changes = await aiService.getExplainedChanges("", diff);
+      } catch (error) {
+        // If VS Code LM fails with model not supported error, try OpenAI as fallback
+        if (
+          error instanceof Error &&
+          (error.message.includes("model_not_supported") ||
+            error.message.includes("Model is not supported"))
+        ) {
+          vscode.window.showInformationMessage(
+            "VS Code Language Model not supported for this request. Falling back to OpenAI...",
+          );
+          const apiKey = this.workspaceService?.getOpenAIKey();
+          if (apiKey) {
+            changes = await this.getOpenAPIService().getExplainedChanges(diff, apiKey, nameOnly);
+          } else {
+            vscode.window.showErrorMessage(
+              "VS Code Language Model failed and no OpenAI API key configured. Please configure OpenAI API key in settings.",
+            );
+            return;
+          }
+        } else {
+          throw error; // Re-throw other errors
+        }
+      }
     }
 
     /* Copying the changes to the clipboard and showing the changes in the message box. */
@@ -262,8 +310,36 @@ class Diffy extends BaseDiffy {
       }
       changes = await this.getOpenAPIService().getCommitMessageFromDiff(diff, apiKey, nameOnly);
     } else {
-      // VS Code LLM
-      changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(diff, nameOnly);
+      // VS Code LLM - try with fallback to OpenAI if it fails
+      try {
+        changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(diff, nameOnly);
+      } catch (error) {
+        // If VS Code LM fails with model not supported error, try OpenAI as fallback
+        if (
+          error instanceof Error &&
+          (error.message.includes("model_not_supported") ||
+            error.message.includes("Model is not supported"))
+        ) {
+          vscode.window.showInformationMessage(
+            "VS Code Language Model not supported for this request. Falling back to OpenAI...",
+          );
+          const apiKey = this.workspaceService?.getOpenAIKey();
+          if (apiKey) {
+            changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+              diff,
+              apiKey,
+              nameOnly,
+            );
+          } else {
+            vscode.window.showErrorMessage(
+              "VS Code Language Model failed and no OpenAI API key configured. Please configure OpenAI API key in settings.",
+            );
+            return;
+          }
+        } else {
+          throw error; // Re-throw other errors
+        }
+      }
     }
 
     if (changes) {
@@ -334,8 +410,41 @@ class Diffy extends BaseDiffy {
         progress,
       );
     } else {
-      // VS Code LLM
-      changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(diff, nameOnly, progress);
+      // VS Code LLM - try with fallback to OpenAI if it fails
+      try {
+        changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(
+          diff,
+          nameOnly,
+          progress,
+        );
+      } catch (error) {
+        // If VS Code LM fails with model not supported error, try OpenAI as fallback
+        if (
+          error instanceof Error &&
+          (error.message.includes("model_not_supported") ||
+            error.message.includes("Model is not supported"))
+        ) {
+          vscode.window.showInformationMessage(
+            "VS Code Language Model not supported for this request. Falling back to OpenAI...",
+          );
+          const apiKey = this.workspaceService?.getOpenAIKey();
+          if (apiKey) {
+            changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+              diff,
+              apiKey,
+              nameOnly,
+              progress,
+            );
+          } else {
+            vscode.window.showErrorMessage(
+              "VS Code Language Model failed and no OpenAI API key configured. Please configure OpenAI API key in settings.",
+            );
+            return;
+          }
+        } else {
+          throw error; // Re-throw other errors
+        }
+      }
     }
 
     if (changes) {

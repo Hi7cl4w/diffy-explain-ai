@@ -5,7 +5,8 @@
 
 // https://github.com/microsoft/vscode/blob/main/extensions/git/src/api/git.d.ts
 
-import type { Uri, Event, Disposable, ProviderResult, Command } from "vscode";
+import type { Command, Disposable, Event, ProviderResult, Uri } from "vscode";
+
 export type { ProviderResult } from "vscode";
 
 export interface Git {

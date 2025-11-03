@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import * as vscode from "vscode";
+import type * as vscode from "vscode";
 import { window } from "vscode";
 import { clearOutput, sendToOutput } from "../utils/log";
 import { CacheService } from "./CacheService";
@@ -20,10 +20,10 @@ class OpenAiService implements AIService {
   cacheService!: CacheService;
 
   constructor() {
-    if (OpenAiService._instance) {
-      return OpenAiService._instance;
+    if (!OpenAiService._instance) {
+      OpenAiService._instance = this;
+      this.cacheService = CacheService.getInstance();
     }
-    this.cacheService = CacheService.getInstance();
   }
 
   /**
@@ -50,31 +50,22 @@ class OpenAiService implements AIService {
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ): Promise<string | null> {
-    let gitCmd = "git diff --cached";
+    let _gitCmd = "git diff --cached";
     if (nameOnly) {
-      gitCmd = "git diff --cached --name-status";
+      _gitCmd = "git diff --cached --name-status";
     }
     const instructions = WorkspaceService.getInstance().getAIInstructions();
     if (!instructions) {
       return null;
     }
-    let response = await this.getFromOpenApi(
-      instructions,
-      code,
-      openAIKey,
-      progress
-    );
-    if (
-      response &&
-      response.choices.length > 0 &&
-      response.choices[0].message
-    ) {
+    const response = await this.getFromOpenApi(instructions, code, openAIKey, progress);
+    if (response && response.choices.length > 0 && response.choices[0].message) {
       let message = String(response?.choices[0].message.content);
       message = message.trim();
-      message = message.replace(/^\"/gm, "");
-      message = message.replace(/\"$/gm, "");
+      message = message.replace(/^"/gm, "");
+      message = message.replace(/"$/gm, "");
       return message;
     }
     return null;
@@ -86,11 +77,7 @@ class OpenAiService implements AIService {
    * @param {string} code - the git diff you want to get the explanation for
    * @returns The explanation of the git diff.
    */
-  async getExplainedChanges(
-    code: string,
-    openAIKey?: string,
-    nameOnly?: boolean
-  ) {
+  async getExplainedChanges(code: string, openAIKey?: string, nameOnly?: boolean) {
     let gitCmd = "git diff --cached";
     if (nameOnly) {
       gitCmd = "git diff --cached --name-status";
@@ -99,16 +86,12 @@ class OpenAiService implements AIService {
       "You are a bot explains the changes from the result of '" +
       gitCmd +
       "' that user given. commit message should be a multiple lines where first line doesn't exceeds '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
-    let response = await this.getFromOpenApi(instructions, code, openAIKey);
-    if (
-      response &&
-      response.choices.length > 0 &&
-      response.choices[0].message
-    ) {
+    const response = await this.getFromOpenApi(instructions, code, openAIKey);
+    if (response && response.choices.length > 0 && response.choices[0].message) {
       let message = String(response?.choices[0].message.content);
       message = message.trim();
-      message = message.replace(/^\"/gm, "");
-      message = message.replace(/\"$/gm, "");
+      message = message.replace(/^"/gm, "");
+      message = message.replace(/"$/gm, "");
       return message;
     }
     return null;
@@ -127,7 +110,7 @@ class OpenAiService implements AIService {
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>
+    }>,
   ) {
     const openAiClient = new OpenAI({ apiKey: openAIKey });
     const model = WorkspaceService.getInstance().getGptModel();
@@ -135,7 +118,7 @@ class OpenAiService implements AIService {
     if (exist) {
       const result = this.cacheService.get(
         model,
-        instructions + prompt
+        instructions + prompt,
       ) as OpenAI.Chat.Completions.ChatCompletion;
       sendToOutput(`result: ${JSON.stringify(result)}`);
       return result;
@@ -190,9 +173,7 @@ class OpenAiService implements AIService {
         }
         if (reason.response?.statusText) {
           window.showErrorMessage(
-            `OpenAI Error: ${
-              reason.response?.data.error?.message || reason.response.statusText
-            } `
+            `OpenAI Error: ${reason.response?.data.error?.message || reason.response.statusText} `,
           );
         } else {
           window.showErrorMessage("OpenAI Error");
@@ -200,23 +181,21 @@ class OpenAiService implements AIService {
         if (reason?.response?.status && openAIKey) {
           if (reason?.response?.status === 429) {
             window.showInformationMessage(
-              "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server."
+              "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server.",
             );
             // return await this.getFromOpenApi(prompt, undefined, progress);
           }
         }
         if (reason.response?.data.error?.type === "invalid_request_error") {
           window.showErrorMessage(
-            "Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later."
+            "Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later.",
           );
           progress?.report({
             increment: 1,
             message: "\nFailed.",
           });
         } else if (reason.response?.data.error?.message) {
-          window.showErrorMessage(
-            `Diffy Error: ${reason.response?.data.error?.message}`
-          );
+          window.showErrorMessage(`Diffy Error: ${reason.response?.data.error?.message}`);
           progress?.report({
             increment: 1,
             message: "\nFailed.",
@@ -225,7 +204,6 @@ class OpenAiService implements AIService {
         return undefined;
       });
     if (
-      response &&
       response?.choices[0].message.content &&
       response?.choices[0].message.content !== "" &&
       response?.choices[0].message.content !== "\n"

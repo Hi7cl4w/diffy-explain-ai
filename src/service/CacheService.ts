@@ -1,4 +1,4 @@
-import { CacheData, CacheResult } from "../@types/extension";
+import type { CacheData, CacheResult } from "../@types/extension";
 
 export class CacheService {
   private static _instance: CacheService;

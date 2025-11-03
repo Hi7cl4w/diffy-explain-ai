@@ -1,5 +1,5 @@
-import { EventEmitter } from "events";
-import { window, workspace, WorkspaceFolder } from "vscode";
+import { EventEmitter } from "node:events";
+import { type WorkspaceFolder, window, workspace } from "vscode";
 import { EventType } from "../@types/EventType";
 import { CONSTANTS } from "../Constants";
 
@@ -7,19 +7,19 @@ export default class WorkspaceService extends EventEmitter {
   static _instance: WorkspaceService;
 
   constructor() {
-    if (WorkspaceService._instance) {
-      return WorkspaceService._instance;
-    }
     super();
-    /* Listening for changes to the workspace configuration. */
-    workspace.onDidChangeConfiguration((e) => {
-      this.emit(EventType.WORKSPACE_CHANGED);
-    });
+    if (!WorkspaceService._instance) {
+      WorkspaceService._instance = this;
+      /* Listening for changes to the workspace configuration. */
+      workspace.onDidChangeConfiguration((_e) => {
+        this.emit(EventType.WORKSPACE_CHANGED);
+      });
 
-    /* Listening for changes to the workspace configuration. */
-    workspace.onDidChangeWorkspaceFolders((e) => {
-      this.emit(EventType.WORKSPACE_CHANGED);
-    });
+      /* Listening for changes to the workspace configuration. */
+      workspace.onDidChangeWorkspaceFolders((_e) => {
+        this.emit(EventType.WORKSPACE_CHANGED);
+      });
+    }
   }
 
   /**
@@ -39,10 +39,7 @@ export default class WorkspaceService extends EventEmitter {
    * @returns A boolean value.
    */
   checkAndWarnWorkSpaceExist(): boolean {
-    if (
-      !workspace.workspaceFolders ||
-      workspace.workspaceFolders.length === 0
-    ) {
+    if (!workspace.workspaceFolders || workspace.workspaceFolders.length === 0) {
       this.showErrorMessage("Your are not in a Workspace");
       return false;
     }
@@ -55,10 +52,7 @@ export default class WorkspaceService extends EventEmitter {
    * @returns {string | null} The current workspace folder path.
    */
   getCurrentWorkspaceUri(): string | null {
-    if (
-      !workspace.workspaceFolders ||
-      workspace.workspaceFolders.length === 0
-    ) {
+    if (!workspace.workspaceFolders || workspace.workspaceFolders.length === 0) {
       return null;
     }
     return workspace.workspaceFolders[0].uri.fsPath;
@@ -69,10 +63,7 @@ export default class WorkspaceService extends EventEmitter {
    * @returns {WorkspaceFolder | null} The first workspace folder in the workspace.workspaceFolders array.
    */
   getCurrentWorkspace(): WorkspaceFolder | null {
-    if (
-      !workspace.workspaceFolders ||
-      workspace.workspaceFolders.length === 0
-    ) {
+    if (!workspace.workspaceFolders || workspace.workspaceFolders.length === 0) {
       return null;
     }
     return workspace.workspaceFolders[0];
@@ -90,11 +81,21 @@ export default class WorkspaceService extends EventEmitter {
     return workspace.getConfiguration(CONSTANTS.extensionName);
   }
 
+  getAiServiceProvider() {
+    const value = String(this.getConfiguration().get("aiServiceProvider"));
+    return value || "openai";
+  }
+
+  getVsCodeLmModel() {
+    const value = String(this.getConfiguration().get("vscodeLmModel"));
+    return value || "copilot-gpt-4o";
+  }
+
   getOpenAIKey() {
     const value = String(this.getConfiguration().get("openAiKey"));
     if (!value) {
       this.showErrorMessage(
-        "Your OpenAI API Key is missing; kindly input it within the Diffy Settings section. You can generate a key by visiting the OpenAI website."
+        "Your OpenAI API Key is missing; kindly input it within the Diffy Settings section. You can generate a key by visiting the OpenAI website.",
       );
       return null;
     }
@@ -119,7 +120,7 @@ export default class WorkspaceService extends EventEmitter {
       : undefined;
     if (!value) {
       this.showErrorMessage(
-        "Instructions for AI are absent; please provide them within the Diffy Settings section."
+        "Instructions for AI are absent; please provide them within the Diffy Settings section.",
       );
       return null;
     }

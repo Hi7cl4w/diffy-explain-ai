@@ -124,7 +124,7 @@ class GitService {
       // Simple glob pattern matching
       if (pattern.includes("*")) {
         const regex = new RegExp(
-          `^${pattern.replace(/\./g, "\\.").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+          `^${pattern.replace(/\\/g, "\\\\").replace(/\./g, "\\.").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
         );
         if (regex.test(filePath)) {
           return true;

@@ -132,7 +132,7 @@ class VsCodeLlmService implements AIService {
       }
 
       if (models.length === 0) {
-        window.showErrorMessage(
+        void window.showErrorMessage(
           "No language models available. Please ensure GitHub Copilot is installed and you are signed in.",
         );
         progress?.report({
@@ -206,9 +206,9 @@ class VsCodeLlmService implements AIService {
             errorMessage += error.message;
         }
 
-        window.showErrorMessage(errorMessage);
+        void window.showErrorMessage(errorMessage);
       } else {
-        window.showErrorMessage(
+        void window.showErrorMessage(
           `Diffy Error: Failed to generate commit message. ${error.message || "Unknown error"}`,
         );
       }

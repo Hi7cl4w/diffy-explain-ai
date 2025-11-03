@@ -40,7 +40,7 @@ export default class WorkspaceService extends EventEmitter {
    */
   checkAndWarnWorkSpaceExist(): boolean {
     if (!workspace.workspaceFolders || workspace.workspaceFolders.length === 0) {
-      this.showErrorMessage("Your are not in a Workspace");
+      void this.showErrorMessage("Your are not in a Workspace");
       return false;
     }
     return true;
@@ -94,7 +94,7 @@ export default class WorkspaceService extends EventEmitter {
   getOpenAIKey() {
     const value = String(this.getConfiguration().get("openAiKey"));
     if (!value) {
-      this.showErrorMessage(
+      void this.showErrorMessage(
         "Your OpenAI API Key is missing; kindly input it within the Diffy Settings section. You can generate a key by visiting the OpenAI website.",
       );
       return null;
@@ -119,7 +119,7 @@ export default class WorkspaceService extends EventEmitter {
       ? String(this.getConfiguration().get("aiInstructions"))
       : undefined;
     if (!value) {
-      this.showErrorMessage(
+      void this.showErrorMessage(
         "Instructions for AI are absent; please provide them within the Diffy Settings section.",
       );
       return null;

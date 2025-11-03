@@ -157,52 +157,51 @@ class OpenAiService implements AIService {
     sendToOutput(`model: ${params.model}`);
     sendToOutput(`max_tokens: ${params.max_tokens}`);
     sendToOutput(`temperature: ${params.temperature}`);
-    const response = await openAiClient.chat.completions
-      .create(params)
-      .then((value) => {
-        sendToOutput(`result success: ${JSON.stringify(value)}`);
-        progress?.report({ increment: 49 });
-        return value;
-      })
-      .catch(async (reason) => {
-        console.error(reason.response);
-        sendToOutput(`result failed: ${JSON.stringify(reason)}`);
-        if (typeof reason === "string" || reason instanceof String) {
-          window.showErrorMessage(`OpenAI Error: ${reason} `);
-          return undefined;
-        }
-        if (reason.response?.statusText) {
-          window.showErrorMessage(
-            `OpenAI Error: ${reason.response?.data.error?.message || reason.response.statusText} `,
-          );
-        } else {
-          window.showErrorMessage("OpenAI Error");
-        }
-        if (reason?.response?.status && openAIKey) {
-          if (reason?.response?.status === 429) {
-            window.showInformationMessage(
-              "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server.",
-            );
-            // return await this.getFromOpenApi(prompt, undefined, progress);
-          }
-        }
-        if (reason.response?.data.error?.type === "invalid_request_error") {
-          window.showErrorMessage(
-            "Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later.",
-          );
-          progress?.report({
-            increment: 1,
-            message: "\nFailed.",
-          });
-        } else if (reason.response?.data.error?.message) {
-          window.showErrorMessage(`Diffy Error: ${reason.response?.data.error?.message}`);
-          progress?.report({
-            increment: 1,
-            message: "\nFailed.",
-          });
-        }
+
+    let response: OpenAI.Chat.Completions.ChatCompletion | undefined;
+    try {
+      response = await openAiClient.chat.completions.create(params);
+      sendToOutput(`result success: ${JSON.stringify(response)}`);
+      progress?.report({ increment: 49 });
+    } catch (reason: any) {
+      console.error(reason.response);
+      sendToOutput(`result failed: ${JSON.stringify(reason)}`);
+      if (typeof reason === "string" || reason instanceof String) {
+        window.showErrorMessage(`OpenAI Error: ${reason} `);
         return undefined;
-      });
+      }
+      if (reason.response?.statusText) {
+        window.showErrorMessage(
+          `OpenAI Error: ${reason.response?.data.error?.message || reason.response.statusText} `,
+        );
+      } else {
+        window.showErrorMessage("OpenAI Error");
+      }
+      if (reason?.response?.status && openAIKey) {
+        if (reason?.response?.status === 429) {
+          window.showInformationMessage(
+            "Caution: In case the API key has expired, please remove it from the extension settings in order to continue using the default proxy server.",
+          );
+          // return await this.getFromOpenApi(prompt, undefined, progress);
+        }
+      }
+      if (reason.response?.data.error?.type === "invalid_request_error") {
+        window.showErrorMessage(
+          "Diffy Error: There was an issue. Server is experiencing downtime/busy. Please try again later.",
+        );
+        progress?.report({
+          increment: 1,
+          message: "\nFailed.",
+        });
+      } else if (reason.response?.data.error?.message) {
+        window.showErrorMessage(`Diffy Error: ${reason.response?.data.error?.message}`);
+        progress?.report({
+          increment: 1,
+          message: "\nFailed.",
+        });
+      }
+      return undefined;
+    }
     if (
       response?.choices[0].message.content &&
       response?.choices[0].message.content !== "" &&

@@ -38,22 +38,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Get current version
-        id: current-version
+      - name: Check if version bump is needed
+        id: check-version-bump
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $CURRENT_VERSION"
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          
+          # Check if this version already has a tag (meaning it was published before)
+          if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
+            echo "needs_bump=true" >> $GITHUB_OUTPUT
+            echo "Version $CURRENT_VERSION already exists, needs bump"
+          else
+            echo "needs_bump=false" >> $GITHUB_OUTPUT
+            echo "Version $CURRENT_VERSION is new, no bump needed"
+          fi
 
       - name: Check if version tag exists
         id: check-tag
         run: |
-          if git rev-parse "v${{ steps.current-version.outputs.version }}" >/dev/null 2>&1; then
+          if git rev-parse "v${{ steps.check-version-bump.outputs.current_version }}" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.current-version.outputs.version }} already exists"
+            echo "Tag v${{ steps.check-version-bump.outputs.current_version }} already exists"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.current-version.outputs.version }} does not exist"
+            echo "Tag v${{ steps.check-version-bump.outputs.current_version }} does not exist"
           fi
 
       - name: Analyze commits for version bump
@@ -95,6 +103,7 @@ jobs:
 
       - name: Bump version
         id: bump-version
+        if: steps.check-version-bump.outputs.needs_bump == 'true'
         run: |
           # Always bump version for publishing to avoid conflicts
           npm version patch --no-git-tag-version
@@ -105,15 +114,78 @@ jobs:
       - name: Set final version
         id: final-version
         run: |
-          echo "version=${{ steps.bump-version.outputs.version }}" >> $GITHUB_OUTPUT
+          if [ "${{ steps.check-version-bump.outputs.needs_bump }}" == "true" ]; then
+            echo "version=${{ steps.bump-version.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.check-version-bump.outputs.current_version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create version bump branch
+        id: create-branch
+        if: steps.check-version-bump.outputs.needs_bump == 'true'
+        run: |
+          BRANCH_NAME="release/v${{ steps.bump-version.outputs.version }}"
+          git checkout -b $BRANCH_NAME
+          echo "branch=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "Created branch: $BRANCH_NAME"
 
       - name: Commit version changes
+        if: steps.check-version-bump.outputs.needs_bump == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add package.json package-lock.json
-          git commit -m "chore: bump version to ${{ steps.final-version.outputs.version }}"
-          git push
+          git commit -m "chore: bump version to ${{ steps.bump-version.outputs.version }}"
+          git push origin ${{ steps.create-branch.outputs.branch }}
+          echo "Committed and pushed version bump to branch: ${{ steps.create-branch.outputs.branch }}"
+
+      - name: Create Pull Request
+        id: create-pr
+        if: steps.check-version-bump.outputs.needs_bump == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.create-branch.outputs.branch }}
+          base: main
+          title: "chore: bump version to ${{ steps.bump-version.outputs.version }}"
+          body: |
+            ## Version Bump
+
+            This PR bumps the version to ${{ steps.bump-version.outputs.version }} for the upcoming release.
+
+            ### Changes
+            - Updated version in package.json from ${{ steps.check-version-bump.outputs.current_version }} to ${{ steps.bump-version.outputs.version }}
+            - Updated package-lock.json accordingly
+
+            ### Next Steps
+            After merging this PR, the release workflow will continue with building and publishing the extension.
+
+            ---
+            *This PR was automatically created by the release workflow.*
+          labels: |
+            automated
+            version-bump
+          draft: false
+
+      - name: Wait for PR merge and continue release
+        if: steps.check-version-bump.outputs.needs_bump == 'true'
+        run: |
+          echo "Pull Request created: ${{ steps.create-pr.outputs.pull-request-url }}"
+          echo "Please merge the PR before the release can continue."
+          echo "## ⏳ Waiting for Version Bump PR Merge" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "A pull request has been created to bump the version:" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR**: ${{ steps.create-pr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.check-version-bump.outputs.current_version }} → ${{ steps.bump-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Review and merge the version bump PR" >> $GITHUB_STEP_SUMMARY
+          echo "2. Re-run this release workflow to continue with publishing" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "*The workflow will stop here until the PR is merged.*" >> $GITHUB_STEP_SUMMARY
+          
+          # Exit with error to stop the workflow until PR is merged
+          exit 1
 
       - name: Run type check
         run: npm run type-check

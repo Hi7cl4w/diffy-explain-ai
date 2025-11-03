@@ -43,16 +43,12 @@ class OpenAiService implements AIService {
   async getCommitMessageFromDiff(
     code: string,
     openAIKey: string,
-    nameOnly?: boolean,
+    _nameOnly?: boolean,
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
     }>,
   ): Promise<string | null> {
-    let _gitCmd = "git diff --cached";
-    if (nameOnly) {
-      _gitCmd = "git diff --cached --name-status";
-    }
     const instructions = WorkspaceService.getInstance().getAIInstructions();
     if (!instructions) {
       return null;

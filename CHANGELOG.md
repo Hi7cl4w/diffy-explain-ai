@@ -4,6 +4,31 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.3.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.2.1...diffy-explain-ai-v1.3.0) (2025-11-04)
+
+
+### ✨ Features
+
+* add codebase indexing service and improve configuration handling ([b53f132](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b53f1325e2b243d6aab8fc6b9294ac5bac06fed5))
+* add support for Grok Code Fast 1 and GPT-5 mini Copilot models ([869eb03](https://github.com/Hi7cl4w/diffy-explain-ai/commit/869eb036770344a00b3babf30b44ebfd8f30c4cc))
+
+
+### 📝 Documentation
+
+* **changelog:** update for version 1.2.0 and unreleased fixes ([e2c0a8d](https://github.com/Hi7cl4w/diffy-explain-ai/commit/e2c0a8d0fc820de94ef2f4a21f90d1bc2daae785))
+* enhance README with comprehensive features, installation, and configuration details ([cce7142](https://github.com/Hi7cl4w/diffy-explain-ai/commit/cce7142bb2337f8864407e76d5f5d32eb82bcb35))
+* update README with new Copilot models and codebase indexing features ([f1dfca5](https://github.com/Hi7cl4w/diffy-explain-ai/commit/f1dfca5bffd3c997a0766d2bf8952573eee5987c))
+
+
+### 💅 Styles
+
+* apply code formatting and linting fixes ([4d73066](https://github.com/Hi7cl4w/diffy-explain-ai/commit/4d730665a8d21e72415a88858e566388b4219ac9))
+
+
+### 🔧 Continuous Integration
+
+* **release:** update workflow to use dynamic release body and automate changelog commits ([8cedee2](https://github.com/Hi7cl4w/diffy-explain-ai/commit/8cedee2d740b8ff5bfc035927b9d97362330a91e))
+
 ## [1.2.1](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.2.0...diffy-explain-ai-v1.2.1) (2025-11-03)
 
 ### 💅 Styles

@@ -36,13 +36,13 @@ class VsCodeLlmService implements AIService {
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>,
+    }>
   ): Promise<string | null> {
     const workspaceService = WorkspaceService.getInstance();
     const commitType = workspaceService.getCommitMessageType();
     const includeBody = workspaceService.getIncludeCommitBody();
     const maxLength = workspaceService.getMaxCommitMessageLength();
-    const customInstructions = workspaceService.getAIInstructions();
+    const additionalInstructions = workspaceService.getAdditionalInstructions();
 
     // Build enhanced prompt based on commit type and settings
     let instructions = "";
@@ -63,9 +63,12 @@ class VsCodeLlmService implements AIService {
         .replace(/{locale}/g, "en") // Could be made configurable if needed
         .replace(/{diff}/g, ""); // We append diff separately
 
-      // Add custom instructions if provided (unless already in template)
-      if (customInstructions && !customTemplate.includes(customInstructions)) {
-        instructions += `\n\nADDITIONAL INSTRUCTIONS:\n${customInstructions}`;
+      // Add additional instructions if provided (unless already in template)
+      if (
+        additionalInstructions &&
+        !customTemplate.includes(additionalInstructions)
+      ) {
+        instructions += `\n\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}`;
       }
     } else if (commitType === "gitmoji") {
       instructions = `You are an expert Git commit message generator that uses Gitmoji (emoji-based commits).
@@ -96,7 +99,11 @@ REQUIREMENTS:
           : ""
       }
 
-${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : ""}
+${
+  additionalInstructions
+    ? `\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n`
+    : ""
+}
 
 Return ONLY the commit message, no explanations or surrounding text.`;
     } else {
@@ -133,7 +140,11 @@ REQUIREMENTS:
           : ""
       }
 
-${customInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${customInstructions}\n` : ""}
+${
+  additionalInstructions
+    ? `\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n`
+    : ""
+}
 
 Return ONLY the commit message, no explanations or surrounding text.`;
     }
@@ -154,7 +165,10 @@ Return ONLY the commit message, no explanations or surrounding text.`;
    * @param {string} string2 - the second parameter (diff code)
    * @returns The explanation of the git diff.
    */
-  async getExplainedChanges(_string1: string, string2: string): Promise<string | null> {
+  async getExplainedChanges(
+    _string1: string,
+    string2: string
+  ): Promise<string | null> {
     const instructions =
       "You are a bot that explains the changes from the result of 'git diff --cached' that user given. commit message should be a multiple lines where first line doesn't exceed '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
     const response = await this.getFromVsCodeLlm(instructions, string2);
@@ -181,7 +195,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
     progress?: vscode.Progress<{
       message?: string | undefined;
       increment?: number | undefined;
-    }>,
+    }>
   ): Promise<string | undefined> {
     const vscodeLmModel = WorkspaceService.getInstance().getVsCodeLmModel();
 
@@ -211,6 +225,8 @@ Return ONLY the commit message, no explanations or surrounding text.`;
           "gpt-4",
           "gpt-4-turbo",
           "o1-mini",
+          "gpt-5-mini",
+          "grok-code-fast-1",
           "gpt-3.5-turbo",
           "o1-preview",
           "gpt-3.5",
@@ -323,6 +339,28 @@ Return ONLY the commit message, no explanations or surrounding text.`;
             family: "o1",
           });
         }
+      } else if (vscodeLmModel === "copilot-grok-code-fast-1") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "grok-code-fast-1",
+        });
+        if (models.length === 0) {
+          // Fallback to any available copilot model
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+          });
+        }
+      } else if (vscodeLmModel === "copilot-gpt-5-mini") {
+        models = await vscode.lm.selectChatModels({
+          vendor: "copilot",
+          family: "gpt-5-mini",
+        });
+        if (models.length === 0) {
+          // Fallback to any available copilot model
+          models = await vscode.lm.selectChatModels({
+            vendor: "copilot",
+          });
+        }
       } else {
         // Default: try to select any copilot model
         models = await vscode.lm.selectChatModels({
@@ -332,7 +370,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
         // If still no models available, show a more specific error
         if (models.length === 0) {
           window.showErrorMessage(
-            "No GitHub Copilot models available. Please ensure GitHub Copilot is installed, enabled, and you have an active subscription.",
+            "No GitHub Copilot models available. Please ensure GitHub Copilot is installed, enabled, and you have an active subscription."
           );
           progress?.report({
             increment: 1,
@@ -344,7 +382,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
 
       if (models.length === 0) {
         window.showErrorMessage(
-          "No language models available. Please ensure GitHub Copilot is installed and you are signed in.",
+          "No language models available. Please ensure GitHub Copilot is installed and you are signed in."
         );
         progress?.report({
           increment: 1,
@@ -354,18 +392,22 @@ Return ONLY the commit message, no explanations or surrounding text.`;
       }
 
       const [model] = models;
-      sendToOutput(`Selected model: ${model.id} (${model.vendor}/${model.family})`);
+      sendToOutput(
+        `Selected model: ${model.id} (${model.vendor}/${model.family})`
+      );
 
       progress?.report({ increment: 30 });
 
       // Prepare messages - try a simpler format that should be more compatible
-      const messages = [vscode.LanguageModelChatMessage.User(`${instructions}\n\n${prompt}`)];
+      const messages = [
+        vscode.LanguageModelChatMessage.User(`${instructions}\n\n${prompt}`),
+      ];
 
       // Send request with minimal options
       const chatResponse = await model.sendRequest(
         messages,
         {},
-        new vscode.CancellationTokenSource().token,
+        new vscode.CancellationTokenSource().token
       );
 
       progress?.report({ increment: 40 });
@@ -401,14 +443,16 @@ Return ONLY the commit message, no explanations or surrounding text.`;
 
         switch (error.code) {
           case vscode.LanguageModelError.NotFound().code:
-            errorMessage += "Model not found. Please ensure GitHub Copilot is installed.";
+            errorMessage +=
+              "Model not found. Please ensure GitHub Copilot is installed.";
             break;
           case vscode.LanguageModelError.NoPermissions().code:
             errorMessage +=
               "No permissions to use the language model. Please sign in to GitHub Copilot.";
             break;
           case vscode.LanguageModelError.Blocked().code:
-            errorMessage += "Request was blocked. The prompt may violate content policies.";
+            errorMessage +=
+              "Request was blocked. The prompt may violate content policies.";
             break;
           default:
             errorMessage += error.message;
@@ -433,7 +477,10 @@ Return ONLY the commit message, no explanations or surrounding text.`;
             const jsonMatch = error.message.match(/\{.*\}/);
             if (jsonMatch) {
               const errorJson = JSON.parse(jsonMatch[0]);
-              if (errorJson.error && errorJson.error.code === "model_not_supported") {
+              if (
+                errorJson.error &&
+                errorJson.error.code === "model_not_supported"
+              ) {
                 isModelNotSupported = true;
                 // Use the actual error message from the LLM
                 if (errorJson.error.message) {
@@ -449,15 +496,17 @@ Return ONLY the commit message, no explanations or surrounding text.`;
 
         if (isModelNotSupported) {
           window.showErrorMessage(
-            `Diffy Error: The selected language model doesn't support this type of request. Try switching to a different model in settings or use OpenAI instead. LLM Error: ${actualErrorMessage}`,
+            `Diffy Error: The selected language model doesn't support this type of request. Try switching to a different model in settings or use OpenAI instead. LLM Error: ${actualErrorMessage}`
           );
         } else {
           window.showErrorMessage(
-            `Diffy Error: Failed to generate commit message. ${error.message}`,
+            `Diffy Error: Failed to generate commit message. ${error.message}`
           );
         }
       } else {
-        window.showErrorMessage("Diffy Error: Failed to generate commit message. Unknown error");
+        window.showErrorMessage(
+          "Diffy Error: Failed to generate commit message. Unknown error"
+        );
       }
 
       progress?.report({

@@ -28,26 +28,23 @@
   ],
   "icon": "icons/icon.png",
   "main": "./dist/extension.js",
+  "enabledApiProposals": [
+    "contribSourceControlInputBoxMenu"
+  ],
   "contributes": {
     "menus": {
       "scm/title": [
         {
           "command": "diffy-explain-ai.generateCommitMessage",
           "when": "scmProvider == git",
-          "group": "navigation",
-          "title": "Generate Commit Message"
-        },
+          "group": "navigation@1"
+        }
+      ],
+      "scm/inputBox": [
         {
           "command": "diffy-explain-ai.generateCommitMessage",
           "when": "scmProvider == git",
-          "group": "inline",
-          "title": "Generate Commit Message"
-        },
-        {
-          "command": "diffy-explain-ai.generateCommitMessage",
-          "when": "scmProvider == git",
-          "group": "inline",
-          "title": "Generate Commit Message"
+          "group": "navigation@1"
         }
       ]
     },
@@ -90,80 +87,18 @@
       "properties": {
         "diffy-explain-ai.aiServiceProvider": {
           "type": "string",
+          "order": 0,
           "enum": [
             "openai",
             "vscode-lm",
             "gemini"
           ],
           "default": "vscode-lm",
-          "markdownDescription": "Select the AI service provider to use for generating commit messages. \n\n- **vscode-lm**: Use VS Code's built-in Language Model API (GitHub Copilot) - Default\n- **openai**: Use OpenAI API directly (requires API key)\n- **gemini**: Use Google Gemini API (requires API key)"
-        },
-        "diffy-explain-ai.vscodeLmModel": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "copilot-gpt-4o",
-            "copilot-gpt-4",
-            "copilot-gpt-4-turbo",
-            "copilot-gpt-3.5-turbo",
-            "copilot-gpt-3.5",
-            "copilot-o1",
-            "copilot-o1-mini",
-            "copilot-o1-preview"
-          ],
-          "enumDescriptions": [
-            "Automatically selects the best available model (recommended)",
-            "GitHub Copilot GPT-4o model - Latest and most capable",
-            "GitHub Copilot GPT-4 model - High capability model",
-            "GitHub Copilot GPT-4 Turbo model - Fast and capable",
-            "GitHub Copilot GPT-3.5 Turbo model - Fast and efficient",
-            "GitHub Copilot GPT-3.5 model - Standard capability",
-            "GitHub Copilot o1 model - Advanced reasoning model",
-            "GitHub Copilot o1-mini model - Compact reasoning model",
-            "GitHub Copilot o1-preview model - Preview of o1 capabilities"
-          ],
-          "default": "auto",
-          "markdownDescription": "Select the VS Code Language Model to use when `aiServiceProvider` is set to `vscode-lm`. Requires GitHub Copilot subscription. \n\nAvailable models may vary based on your Copilot subscription tier:\n\n- **auto**: Automatically selects the best available model\n- **copilot-gpt-4o**: Latest GPT-4o model (recommended for most users)\n- **copilot-gpt-4**: GPT-4 model with high reasoning capabilities\n- **copilot-gpt-4-turbo**: Fast GPT-4 Turbo model\n- **copilot-gpt-3.5-turbo**: Fast and efficient GPT-3.5 Turbo\n- **copilot-gpt-3.5**: Standard GPT-3.5 model\n- **copilot-o1**: Advanced o1 reasoning model (may require higher tier)\n- **copilot-o1-mini**: Compact o1-mini model\n- **copilot-o1-preview**: Preview access to o1 capabilities"
-        },
-        "diffy-explain-ai.proxyUrl": {
-          "type": "string",
-          "default": "",
-          "description": "Provide a user-defined URL for the OpenAI API proxy server. Please ensure the server's availability is confirmed. The default value is: https://api.openai.com/v1."
-        },
-        "diffy-explain-ai.openAiKey": {
-          "type": "string",
-          "markdownDescription": "Enter your api key from openai.com [Go to API Key Page](https://beta.openai.com/account/api-keys)"
-        },
-        "diffy-explain-ai.model": {
-          "type": "string",
-          "default": "gpt-4-turbo",
-          "markdownDescription": "OpenAI models to use for your prompts. [Documentation](https://beta.openai.com/docs/models/models). \n\n**If you face 400 Bad Request please make sure you are using the right model for your integration method.**"
-        },
-        "diffy-explain-ai.geminiApiKey": {
-          "type": "string",
-          "markdownDescription": "Enter your API key from Google AI Studio [Go to API Key Page](https://aistudio.google.com/app/apikey)"
-        },
-        "diffy-explain-ai.geminiModel": {
-          "type": "string",
-          "default": "gemini-2.0-flash-exp",
-          "markdownDescription": "Google Gemini models to use for your prompts. [Documentation](https://ai.google.dev/gemini-api/docs/models/gemini). \n\nPopular models:\n- **gemini-2.0-flash-exp**: Latest experimental model (fast and capable)\n- **gemini-1.5-pro**: High-capability model for complex tasks\n- **gemini-1.5-flash**: Fast and efficient model"
-        },
-        "diffy-explain-ai.temperature": {
-          "type": "number",
-          "default": 0.2,
-          "description": "Temperature is a parameter used in OpenAI's language models to control the level of randomness and creativity in generated text, with higher values making the output more random and lower values making it more deterministic."
-        },
-        "diffy-explain-ai.maxTokens": {
-          "type": "number",
-          "default": 196,
-          "description": "Parameter in OpenAI's language models that limits the maximum length of the generated text output to a specified number of tokens, helping control the length of the response."
-        },
-        "diffy-explain-ai.aiInstructions": {
-          "type": "string",
-          "default": "Analyze the provided git diff --staged output, categorize the changes into a conventional commit type (e.g., feat, fix, docs, chore,style), determine if a scope is applicable, and then synthesize a concise commit message that follows the format  <type>[optional scope]: <description> [optional body] [optional footer(s)]"
+          "markdownDescription": "AI service for generating commit messages.\n\n- **vscode-lm** *(Default)*: GitHub Copilot (no API key needed)\n- **openai**: Direct OpenAI API access\n- **gemini**: Google Gemini API"
         },
         "diffy-explain-ai.commitMessageType": {
           "type": "string",
+          "order": 1,
           "enum": [
             "conventional",
             "gitmoji",
@@ -175,20 +110,39 @@
             "Custom user-defined format using a template with placeholders"
           ],
           "default": "conventional",
-          "markdownDescription": "Choose the commit message format style:\n\n- **conventional**: Standard Conventional Commits format (e.g., `feat: add new feature`)\n- **gitmoji**: Commits with emoji prefixes (e.g., `✨ feat: add new feature`)\n- **custom**: Fully customizable template with placeholders (configure via Custom Commit Prompt setting)"
+          "markdownDescription": "Commit message format style.\n\n- **conventional** *(Default)*: Standard format like `feat(auth): add login`\n- **gitmoji**: Emoji-prefixed format like `✨ feat: add dashboard`\n- **custom**: User-defined template"
         },
-        "diffy-explain-ai.customCommitPrompt": {
-          "type": "string",
-          "default": "Generate a commit message for the following git diff.\n\nRequirements:\n- Maximum subject length: {maxLength} characters\n- Use imperative mood\n- Be concise and clear{bodyInstructions}\n\nReturn ONLY the commit message, no explanations.",
-          "markdownDescription": "Custom commit message generation prompt when **Commit Message Type** is set to `custom`. \n\nSupported placeholders:\n- `{maxLength}` - Maximum subject line length\n- `{bodyInstructions}` - Auto-filled based on Include Commit Body setting\n- `{locale}` - Language/locale for the message\n- `{diff}` - The actual git diff (automatically appended)\n\nExample template:\n```\nGenerate a {locale} commit message following our team convention:\n- Start with JIRA ticket: [PROJ-XXX]\n- Subject max {maxLength} chars\n- Include impact analysis{bodyInstructions}\n```"
+        "diffy-explain-ai.maxCommitMessageLength": {
+          "type": "number",
+          "order": 2,
+          "default": 72,
+          "minimum": 50,
+          "maximum": 200,
+          "markdownDescription": "Maximum character length for the commit subject line:\n\n- **50**: Strict GitHub standard (very concise)\n- **72**: Common standard *(Default, recommended)*\n- **100**: Relaxed limit (more descriptive)\n\n> **Best Practice**: Keep it under 72 characters for optimal GitHub UI display."
         },
         "diffy-explain-ai.includeCommitBody": {
           "type": "boolean",
+          "order": 3,
           "default": false,
-          "markdownDescription": "Include a detailed body section in commit messages with bullet points explaining the changes. When enabled, commit messages will have:\n\n```\nfeat: add user authentication\n\n- Implement JWT token generation\n- Add login and registration endpoints\n- Create user model and database schema\n```"
+          "markdownDescription": "Include detailed body with bullet points explaining changes.\n\nWhen enabled, adds a description section below the subject line.\n\n> **Tip**: Enable for complex changes or team code reviews."
+        },
+        "diffy-explain-ai.additionalInstructions": {
+          "type": "string",
+          "order": 4,
+          "default": "",
+          "editPresentation": "multilineText",
+          "markdownDescription": "Custom instructions for AI prompts.\n\nAdd team-specific guidelines, ticket references, or formatting requirements.\n\nLeave empty for default behavior."
+        },
+        "diffy-explain-ai.customCommitPrompt": {
+          "type": "string",
+          "order": 5,
+          "default": "Generate a commit message for the following git diff.\n\nRequirements:\n- Maximum subject length: {maxLength} characters\n- Use imperative mood\n- Be concise and clear{bodyInstructions}\n\nReturn ONLY the commit message, no explanations.",
+          "editPresentation": "multilineText",
+          "markdownDescription": "Custom prompt template for commit message generation.\n\nAvailable placeholders: `{maxLength}`, `{bodyInstructions}`, `{locale}`, `{diff}`.\n\nUsed when Commit Message Type is set to `custom`."
         },
         "diffy-explain-ai.excludeFilesFromDiff": {
           "type": "array",
+          "order": 6,
           "items": {
             "type": "string"
           },
@@ -206,14 +160,158 @@
             "*.ttf",
             "*.eot"
           ],
-          "markdownDescription": "File patterns to exclude from AI analysis when generating commit messages. This helps reduce token usage and improve quality by filtering out:\n\n- Lock files (package-lock.json, yarn.lock)\n- Large binary assets (images, fonts)\n- Generated files\n\nSupports glob patterns like `*.log`, `dist/**`, `**/*.min.js`"
+          "editPresentation": "multilineText",
+          "markdownDescription": "File patterns to exclude from AI analysis.\n\nReduces token usage by skipping lock files, binaries, and generated files.\n\nSupports glob patterns like `*.log`, `dist/**`, `**/*.min.js`.",
+          "examples": [
+            "*.min.js",
+            "*.min.css",
+            "dist/**",
+            "build/**",
+            "node_modules/**",
+            "*.jpg",
+            "*.png",
+            "package-lock.json",
+            "yarn.lock",
+            "pnpm-lock.yaml",
+            "Cargo.lock",
+            "Gemfile.lock",
+            "poetry.lock",
+            "*.map",
+            "*.log",
+            ".DS_Store"
+          ]
         },
-        "diffy-explain-ai.maxCommitMessageLength": {
+        "diffy-explain-ai.respectGitignore": {
+          "type": "boolean",
+          "order": 7,
+          "default": true,
+          "markdownDescription": "Exclude files matching `.gitignore` patterns.\n\nReduces token usage by automatically ignoring build artifacts and temporary files.\n\nWorks alongside Exclude Files setting."
+        },
+        "diffy-explain-ai.enableCodebaseContext": {
+          "type": "boolean",
+          "order": 8,
+          "default": false,
+          "markdownDescription": "Include project context in AI prompts for better commit messages.\n\nAnalyzes key project files to provide better scope suggestions and understand your tech stack.\n\n> **Experimental**: Increases token usage and API costs."
+        },
+        "diffy-explain-ai.indexedFiles": {
+          "type": "array",
+          "order": 9,
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "package.json",
+            "README.md",
+            "tsconfig.json",
+            "Cargo.toml",
+            "go.mod",
+            "pom.xml",
+            "build.gradle",
+            "pyproject.toml",
+            "composer.json"
+          ],
+          "editPresentation": "multilineText",
+          "markdownDescription": "Files to analyze for codebase context.\n\nCommon examples: `package.json`, `README.md`, `tsconfig.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `pyproject.toml`.\n\n> **Tip**: Keep list focused to minimize token usage.",
+          "examples": [
+            "package.json",
+            "README.md",
+            "CONTRIBUTING.md",
+            "tsconfig.json",
+            "webpack.config.js",
+            "vite.config.ts",
+            "Cargo.toml",
+            "go.mod",
+            "pom.xml",
+            "build.gradle",
+            "settings.gradle",
+            "pyproject.toml",
+            "setup.py",
+            "requirements.txt",
+            "composer.json",
+            "Gemfile",
+            ".github/workflows/*.yml",
+            "docs/architecture.md"
+          ]
+        },
+        "diffy-explain-ai.maxIndexedFileSize": {
           "type": "number",
-          "default": 72,
-          "minimum": 50,
-          "maximum": 200,
-          "markdownDescription": "Maximum character length for commit message subject line. Following best practices:\n\n- **50**: Strict GitHub standard\n- **72**: Common standard (default)\n- **100**: Relaxed limit"
+          "order": 10,
+          "default": 50,
+          "minimum": 10,
+          "maximum": 500,
+          "markdownDescription": "Maximum file size (KB) for codebase indexing.\n\nLarger files are skipped to control token usage.\n\n**Range**: 10-500 KB"
+        },
+        "diffy-explain-ai.vscodeLmModel": {
+          "type": "string",
+          "order": 20,
+          "enum": [
+            "auto",
+            "copilot-gpt-4o",
+            "copilot-gpt-4",
+            "copilot-gpt-4-turbo",
+            "copilot-gpt-3.5-turbo",
+            "copilot-gpt-3.5",
+            "copilot-o1",
+            "copilot-o1-mini",
+            "copilot-o1-preview",
+            "copilot-grok-code-fast-1",
+            "copilot-gpt-5-mini"
+          ],
+          "enumDescriptions": [
+            "Automatically selects the best available model (recommended)",
+            "GitHub Copilot GPT-4o model - Latest and most capable",
+            "GitHub Copilot GPT-4 model - High capability model",
+            "GitHub Copilot GPT-4 Turbo model - Fast and capable",
+            "GitHub Copilot GPT-3.5 Turbo model - Fast and efficient",
+            "GitHub Copilot GPT-3.5 model - Standard capability",
+            "GitHub Copilot o1 model - Advanced reasoning model",
+            "GitHub Copilot o1-mini model - Compact reasoning model",
+            "GitHub Copilot o1-preview model - Preview of o1 capabilities",
+            "GitHub Copilot Grok Code Fast 1 model - Fast AI model with complimentary access",
+            "GitHub Copilot GPT-5 mini model - Fast, accurate, and reliable for most coding tasks"
+          ],
+          "default": "auto",
+          "markdownDescription": "GitHub Copilot model selection.\n\n- **auto** *(Default)*: Automatically selects best available model\n- **copilot-gpt-4o**: Latest GPT-4o (most capable)\n- **copilot-gpt-4**: High reasoning capabilities\n- **copilot-o1**: Advanced reasoning model\n- **copilot-grok-code-fast-1**: Fast Grok model with complimentary access\n- **copilot-gpt-5-mini**: Fast and reliable GPT-5 mini model\n\n> **Note**: Requires Copilot subscription. Available models vary by tier."
+        },
+        "diffy-explain-ai.openAiKey": {
+          "type": "string",
+          "order": 30,
+          "markdownDescription": "Your OpenAI API key for direct API access.\n\n**Get your key**: [OpenAI API Keys Page](https://platform.openai.com/api-keys)\n\n> **Security**: Keep your API key private. Never commit it to version control."
+        },
+        "diffy-explain-ai.model": {
+          "type": "string",
+          "order": 31,
+          "default": "gpt-4-turbo",
+          "markdownDescription": "OpenAI model selection.\n\n- **gpt-4-turbo** *(Default)*: Fast and cost-effective\n- **gpt-4**: High capability\n- **gpt-4o**: Latest multimodal model\n- **gpt-3.5-turbo**: Budget-friendly\n\n[Model Documentation](https://platform.openai.com/docs/models)"
+        },
+        "diffy-explain-ai.proxyUrl": {
+          "type": "string",
+          "order": 32,
+          "default": "",
+          "markdownDescription": "Custom proxy URL for OpenAI API requests.\n\nLeave empty to use default OpenAI endpoint."
+        },
+        "diffy-explain-ai.geminiApiKey": {
+          "type": "string",
+          "order": 40,
+          "markdownDescription": "Your Google AI Studio API key for Gemini access.\n\n**Get your key**: [Google AI Studio](https://aistudio.google.com/app/apikey)\n\n> **Free Tier**: Gemini offers generous free tier quotas."
+        },
+        "diffy-explain-ai.geminiModel": {
+          "type": "string",
+          "order": 41,
+          "default": "gemini-2.0-flash-exp",
+          "markdownDescription": "Google Gemini model selection.\n\n- **gemini-2.0-flash-exp** *(Default)*: Latest experimental\n- **gemini-1.5-pro**: High-capability\n- **gemini-1.5-flash**: Fast and efficient\n- **gemini-1.0-pro**: Stable production\n\n[Model Documentation](https://ai.google.dev/gemini-api/docs/models/gemini)"
+        },
+        "diffy-explain-ai.temperature": {
+          "type": "string",
+          "order": 50,
+          "default": 0.2,
+          "markdownDescription": "Controls AI response randomness.\n\n**Range**: 0.0-2.0\n\n- **0.0-0.3**: Focused and consistent *(recommended for commits)*\n- **0.4-0.7**: Balanced creativity\n- **0.8-2.0**: More creative and varied\n\n**Default**: 0.2"
+        },
+        "diffy-explain-ai.maxTokens": {
+          "type": "number",
+          "order": 51,
+          "default": 196,
+          "markdownDescription": "Maximum commit message length in tokens.\n\n- **196** *(Default)*: Standard commit message\n- **300**: Includes commit body\n- **500+**: Very detailed messages\n\n> **Note**: Higher values increase API costs."
         }
       }
     }
@@ -252,6 +350,7 @@
     "@google/genai": "^1.28.0",
     "axios": "^1.12.0",
     "axios-retry": "^3.5.0",
+    "gpt-tokenizer": "^2.6.1",
     "openai": "^4.7.0",
     "simple-git": "^3.16.0"
   }

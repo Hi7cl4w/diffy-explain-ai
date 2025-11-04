@@ -34,7 +34,8 @@
 ## Key Features
 
 - Generate Commit Message using **OpenAI** or **VS Code Language Models (GitHub Copilot)**.
-- **Intelligent Code Indexing**: Automatically filters out irrelevant files (lock files, images, etc.) to improve AI analysis quality and reduce token usage.
+- **Intelligent Codebase Indexing**: Analyzes project structure and key files to provide better context for AI-generated commit messages.
+- **Intelligent Code Filtering**: Automatically filters out irrelevant files (lock files, images, etc.) to improve AI analysis quality and reduce token usage.
 - **Customizable Commit Formats**: Choose between Conventional Commits or Gitmoji styles.
 - **Configurable Message Length**: Set maximum subject line length (50-200 characters).
 - **Optional Detailed Bodies**: Include explanatory bullet points in commit messages.
@@ -57,10 +58,19 @@
 2. Set **AI Service Provider** to `vscode-lm`
 3. Ensure GitHub Copilot is installed and you are signed in
 4. Optionally select your preferred model:
-   - `copilot-gpt-4o` (default, recommended)
-   - `copilot-gpt-3.5-turbo`
+   - `auto` (default, recommended - automatically selects best available model)
+   - `copilot-gpt-4o` (Latest GPT-4o - most capable)
+   - `copilot-gpt-4` (High reasoning capabilities)
+   - `copilot-gpt-5-mini` (Fast, accurate, and reliable for most coding tasks)
+   - `copilot-grok-code-fast-1` (Fast AI model with complimentary access)
+   - `copilot-o1` (Advanced reasoning model)
+   - `copilot-o1-mini` (Compact reasoning model)
+   - `copilot-o1-preview` (Preview of o1 capabilities)
+   - `copilot-gpt-4-turbo` (Fast and capable)
+   - `copilot-gpt-3.5-turbo` (Fast and efficient)
+   - `copilot-gpt-3.5` (Standard capability)
 
-**Note:** Using VS Code Language Models requires an active GitHub Copilot subscription.
+**Note:** Using VS Code Language Models requires an active GitHub Copilot subscription. Available models vary by subscription tier.
 
 ## Advanced Configuration
 
@@ -110,11 +120,35 @@ Example patterns:
 - `dist/**` - Exclude build directory
 - `**/*.log` - Exclude all log files
 
+### Codebase Context Analysis
+
+Enable intelligent codebase analysis to provide better context for AI-generated commit messages:
+
+**Enable Codebase Context:**
+Set in: `Settings > Diffy > Enable Codebase Context`
+
+**Configure Indexed Files:**
+Choose which project files to analyze for context:
+- `package.json` - Project dependencies and scripts
+- `README.md` - Project documentation
+- `tsconfig.json` - TypeScript configuration
+- `Cargo.toml` - Rust project configuration
+- `go.mod` - Go module configuration
+- And many more...
+
+Set in: `Settings > Diffy > Indexed Files`
+
+**File Size Limits:**
+Configure maximum file size for indexing (default: 50KB)
+Set in: `Settings > Diffy > Max Indexed File Size`
+
+> **Note:** This feature increases token usage but provides more accurate and context-aware commit messages.
+
 ### Custom AI Instructions
 
 Override the default prompt with your own instructions for commit message generation:
 
-Set in: `Settings > Diffy > AI Instructions`
+Set in: `Settings > Diffy > Additional Instructions`
 
 Example:
 ```

@@ -28,9 +28,6 @@
   ],
   "icon": "icons/icon.png",
   "main": "./dist/extension.js",
-  "enabledApiProposals": [
-    "contribSourceControlInputBoxMenu"
-  ],
   "contributes": {
     "menus": {
       "scm/title": [

@@ -39,7 +39,7 @@ class GeminiService implements AIService {
       increment?: number | undefined;
     }>,
   ): Promise<string | null> {
-    const instructions = WorkspaceService.getInstance().getAIInstructions();
+    const instructions = WorkspaceService.getInstance().getAdditionalInstructions();
     if (!instructions) {
       return null;
     }

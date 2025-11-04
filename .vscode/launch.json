@@ -9,7 +9,10 @@
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--enable-proposed-api=hitclaw.diffy-explain-ai"
+      ],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     },
@@ -17,7 +20,11 @@
       "name": "Run Extension (Disable Other Extentions)",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}", "--disable-extensions"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--disable-extensions",
+        "--enable-proposed-api=hitclaw.diffy-explain-ai"
+      ],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     },

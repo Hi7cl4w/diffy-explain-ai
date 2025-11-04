@@ -127,17 +127,12 @@ export default class WorkspaceService extends EventEmitter {
     return value;
   }
 
-  getAIInstructions() {
-    const value = this.getConfiguration().get("aiInstructions")
-      ? String(this.getConfiguration().get("aiInstructions"))
+  getAdditionalInstructions() {
+    const value = this.getConfiguration().get("additionalInstructions")
+      ? String(this.getConfiguration().get("additionalInstructions"))
       : undefined;
-    if (!value) {
-      this.showErrorMessage(
-        "Instructions for AI are absent; please provide them within the Diffy Settings section.",
-      );
-      return null;
-    }
-    return value;
+    // Return undefined if empty, this is optional now
+    return value?.trim() ? value : undefined;
   }
 
   getTemp() {
@@ -205,6 +200,40 @@ Return ONLY the commit message, no explanations.`;
   getMaxCommitMessageLength() {
     const value = this.getConfiguration().get("maxCommitMessageLength");
     return typeof value === "number" ? value : 72;
+  }
+
+  getRespectGitignore(): boolean {
+    const value = this.getConfiguration().get("respectGitignore");
+    return value === true;
+  }
+
+  getEnableCodebaseContext(): boolean {
+    const value = this.getConfiguration().get("enableCodebaseContext");
+    return value === true;
+  }
+
+  getIndexedFiles(): string[] {
+    const value = this.getConfiguration().get("indexedFiles");
+    if (Array.isArray(value)) {
+      return value;
+    }
+    // Default indexed files
+    return [
+      "package.json",
+      "README.md",
+      "Cargo.toml",
+      "go.mod",
+      "pom.xml",
+      "build.gradle",
+      "pyproject.toml",
+      "setup.py",
+      "composer.json",
+    ];
+  }
+
+  getMaxIndexedFileSize(): number {
+    const value = this.getConfiguration().get("maxIndexedFileSize");
+    return typeof value === "number" ? value : 50;
   }
 
   /**

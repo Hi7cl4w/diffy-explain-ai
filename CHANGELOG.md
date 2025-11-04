@@ -4,6 +4,13 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.3.1](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.3.0...diffy-explain-ai-v1.3.1) (2025-11-04)
+
+
+### 🔧 Build System
+
+* **config:** remove enabledApiProposals from package.json ([61b31a8](https://github.com/Hi7cl4w/diffy-explain-ai/commit/61b31a884a047fc4b20789e6b3ad0fe8dab4f336))
+
 ## [1.3.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.2.1...diffy-explain-ai-v1.3.0) (2025-11-04)
 
 

@@ -24,6 +24,7 @@ jobs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       version: ${{ steps.release.outputs.version }}
+      body: ${{ steps.release.outputs.body }}
 
     steps:
       - name: Run release-please
@@ -83,22 +84,21 @@ jobs:
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           name: Release ${{ needs.release-please.outputs.tag_name }}
-          body: |
-            ## What's Changed
-
-            This release was automatically created by [release-please](https://github.com/googleapis/release-please).
-
-            ### Installation
-
-            **From VS Code Marketplace:**
-            ```
-            code --install-extension hitclaw.diffy-explain-ai
-            ```
-
-            **Or download the VSIX file** from the assets below and install manually.
+          body: ${{ needs.release-please.outputs.body }}
           files: diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit CHANGELOG.md changes
+        if: ${{ needs.release-please.outputs.release_created == 'true' }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add CHANGELOG.md
+          git commit -m "chore: release ${{ needs.release-please.outputs.tag_name }} [skip ci]" || echo "No changes to commit"
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

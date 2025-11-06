@@ -1,4 +1,4 @@
-# Diffy Commit AI
+# Diffy - AI Commit Messages with Context
 
 [![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/hitclaw.diffy-explain-ai?label=Visual%20Studio%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=hitclaw.diffy-explain-ai)
 [![CI](https://github.com/Hi7cl4w/diffy-explain-ai/actions/workflows/main.yml/badge.svg)](https://github.com/Hi7cl4w/diffy-explain-ai/actions/workflows/main.yml)
@@ -8,14 +8,13 @@
 
 ## ✨ Key Features
 
-- 🤖 **Multiple AI Providers**: OpenAI, GitHub Copilot, or Google Gemini
-- 🧠 **Intelligent Codebase Indexing**: Analyzes project structure for context-aware commit messages
-- 🎯 **Smart File Filtering**: Automatically excludes irrelevant files (lock files, images, etc.)
-- 📝 **Customizable Commit Formats**: Conventional Commits, Gitmoji, or custom templates
-- ⚙️ **Advanced Configuration**: 15+ settings for fine-tuned control
-- 🔍 **Explain Changes**: Natural language explanations of code changes
-- 📋 **One-Click Actions**: Generate, copy, or insert commit messages directly
-- 🎨 **SCM Integration**: Native integration with VS Code's source control view
+- 🤖 **Multiple AI Providers**: Choose between OpenAI, GitHub Copilot, or Google Gemini
+- 🧠 **Smart Codebase Indexing**: 3 strategies (Compact, Structured, AST-based) for context-aware commits
+- 📝 **Flexible Formats**: Conventional Commits, Gitmoji, or custom templates
+- 🔍 **Diff Analysis**: Auto-extracts modified functions, classes, and imports
+- ⚙️ **Highly Configurable**: 20+ settings for complete customization
+- 📋 **One-Click Generation**: Direct SCM integration for instant commit messages
+- � **Smart Filtering**: Auto-excludes lock files, images, and other irrelevant changes
 
 ## 🚀 Installation
 
@@ -23,7 +22,7 @@
 
 1. Open VS Code
 2. Go to Extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`)
-3. Search for "Diffy Commit AI"
+3. Search for "Diffy"
 4. Click **Install**
 
 ### From Command Line
@@ -132,8 +131,10 @@ Right-click in the Source Control panel for quick access to Diffy commands.
 | `excludeFilesFromDiff` | Glob patterns to exclude | `package-lock.json`, `yarn.lock`, etc. |
 | `respectGitignore` | Honor `.gitignore` patterns | `true` |
 | `enableCodebaseContext` | Include project context | `false` |
+| `codebaseIndexingStrategy` | Indexing strategy: `compact`, `structured`, `ast-based` | `compact` |
 | `indexedFiles` | Files to analyze for context | `package.json`, `README.md`, etc. |
 | `maxIndexedFileSize` | Max file size for indexing (KB) | `50` |
+| `codebaseContextTokenBudget` | Max tokens for context | `4000` |
 
 ### AI Behavior
 
@@ -147,18 +148,95 @@ Right-click in the Source Control panel for quick access to Diffy commands.
 
 ### Intelligent Codebase Indexing
 
-Enable `enableCodebaseContext` to provide AI with project context:
+Diffy offers **3 indexing strategies** to balance context richness with token costs:
 
+#### 1. Compact (Default) - Token Optimized
 ```json
 {
   "diffy-explain-ai.enableCodebaseContext": true,
+  "diffy-explain-ai.codebaseIndexingStrategy": "compact"
+}
+```
+- **Token Usage**: ~800 tokens for 4 files
+- **Format**: Single-line summary
+- **Best For**: Most projects, cost optimization
+- **Output**: `PROJECT: tech-stack • available-scripts`
+
+#### 2. Structured - Rich Metadata
+```json
+{
+  "diffy-explain-ai.codebaseIndexingStrategy": "structured"
+}
+```
+- **Token Usage**: ~2000-3000 tokens
+- **Format**: JSON with comprehensive metadata
+- **Best For**: Complex changes requiring detailed context
+- **Features**:
+  - File-level change tracking
+  - Modified functions and classes
+  - Import/export analysis
+  - Breaking change detection
+  - Automatic diff summarization
+
+#### 3. AST-based - Semantic Understanding
+```json
+{
+  "diffy-explain-ai.codebaseIndexingStrategy": "ast-based"
+}
+```
+- **Token Usage**: ~1500 tokens (enhanced format)
+- **Format**: File paths with token counts
+- **Best For**: Large refactors, architectural changes
+- **Status**: Enhanced placeholder (full AST parsing future enhancement)
+
+#### Configure Indexed Files
+```json
+{
   "diffy-explain-ai.indexedFiles": [
     "package.json",
     "README.md",
     "tsconfig.json",
     "Cargo.toml",
     "go.mod",
-    "pom.xml"
+    "pom.xml",
+    "pyproject.toml",
+    "composer.json"
+  ],
+  "diffy-explain-ai.codebaseContextTokenBudget": 4000
+}
+```
+
+### Structured Diff Analysis (Structured Mode)
+
+When using `structured` indexing, Diffy automatically analyzes your diff to extract:
+
+- **Modified Functions**: Detects changed functions across JS/TS, Python, Rust, Go
+- **Modified Classes**: Tracks class/interface/type changes
+- **Import Changes**: Added/removed dependencies
+- **Export Changes**: API surface modifications
+- **Breaking Changes**: Automatic detection based on patterns
+- **Module Scope**: File-level and function-level granularity
+
+Example structured diff summary:
+
+```text
+CHANGES SUMMARY:
+📝 Modified 3 files (+45/-12 lines)
+🔧 Functions: handleSubmit, validateInput
+📦 Imports: +react-hook-form, -lodash
+⚠️  Potential breaking change detected
+```
+
+### Basic Codebase Context
+
+Basic configuration (now enhanced with strategies above):
+
+```json
+{
+  "diffy-explain-ai.enableCodebaseContext": true,
+  "diffy-explain-ai.indexedFiles": [
+    "package.json",
+    "README.md"
   ]
 }
 ```
@@ -236,18 +314,37 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ### Code Quality
 
-- **TypeScript**: Strict type checking enabled
-- **Linting**: Biome for consistent code style
-- **Testing**: Mocha test framework
-- **Formatting**: Consistent formatting required
+- **TypeScript**: Strict type checking
+- **Linting**: Biome
+- **Testing**: Mocha
+- **Formatting**: Biome
 
 ## 📊 CI/CD
 
-This project uses GitHub Actions for:
+This project uses GitHub Actions for automated testing, linting, and releases.
 
-- Automated testing on multiple Node.js versions
-- Code linting and formatting checks
-- Automated releases via [release-please](https://github.com/googleapis/release-please)
+## 🔍 Technical Stack
+
+### Architecture
+- **Language**: TypeScript (strict mode)
+- **Build**: Webpack 5 with esbuild loader
+- **Linting**: Biome (replaces ESLint + Prettier)
+- **Testing**: Mocha + VS Code Test Runner
+- **Bundling**: Single extension.js bundle with vendor chunks
+
+### Key Services
+- `CodebaseIndexService`: Smart file indexing with 3 strategies
+- `DiffAnalyzer`: Structured git diff analysis
+- `OpenAiService`, `GeminiService`, `VsCodeLlmService`: AI provider integrations
+- `GitService`: Git operations and diff management
+- `WorkspaceService`: Configuration and workspace management
+- `Logger`: Structured logging with VS Code LogOutputChannel
+
+### Performance Optimizations
+- File content caching with token counting
+- Smart file filtering and prioritization
+- Lazy service initialization
+- Webpack code splitting for faster activation
 
 ## 🙏 Support
 
@@ -274,6 +371,18 @@ This project uses GitHub Actions for:
 
 - Check VS Code version (^1.105.0 required)
 - Try reloading VS Code: `Ctrl+Shift+P` → "Developer: Reload Window"
+
+#### "High token usage with indexing"
+
+- Switch to `compact` indexing strategy for lower costs
+- Reduce `codebaseContextTokenBudget` (default: 4000)
+- Limit `indexedFiles` to essential configuration files
+
+#### "Missing context in commit messages"
+
+- Enable `enableCodebaseContext` setting
+- Try `structured` indexing for rich metadata
+- Add relevant config files to `indexedFiles`
 
 ## 📄 License
 

@@ -1,8 +1,15 @@
+import * as crypto from "node:crypto";
 import type { CacheData, CacheResult } from "../@types/extension";
+
+interface CacheEntry extends CacheData {
+  timestamp: number;
+  ttl: number; // Time to live in milliseconds
+}
 
 export class CacheService {
   private static _instance: CacheService;
-  cache: CacheData[] = [];
+  private cache: Map<string, CacheEntry> = new Map();
+  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes default TTL
 
   /**
    * Returns the singleton instance of the class
@@ -15,39 +22,95 @@ export class CacheService {
     return CacheService._instance;
   }
 
-  /* A method that takes in a entity and data. It then checks if the record exists and if it
-  doesn't it pushes it to the cache. */
-  public set = (entity: string, data: string, result: CacheResult): void => {
-    if (!this.recordExists(entity, data)) {
-      this.cache.push({
-        entity: entity,
-        data: data,
-        result,
-      });
-    }
-  };
+  /**
+   * Create a hash key from entity and data for efficient lookups
+   */
+  private createHashKey(entity: string, data: string): string {
+    // Use SHA-256 hash for long diff content to avoid memory issues with large keys
+    const hash = crypto.createHash("sha256");
+    hash.update(`${entity}:${data}`);
+    return hash.digest("hex");
+  }
 
-  /* A method that takes in entity and data. It then checks if the record exists and if it
-    doesn't it pushes it to the cache. */
-  public get = (entity: string, data: string): CacheResult | null => {
-    const cacheRecord = this.cache.find((x) => {
-      if (data) {
-        return x.entity === entity && x.data === data;
+  /**
+   * Clean expired cache entries
+   */
+  private cleanExpired(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > entry.ttl) {
+        this.cache.delete(key);
       }
+    }
+  }
 
-      return x.entity === entity;
-    });
+  /**
+   * Set a cache entry with optional TTL
+   */
+  public set = (entity: string, data: string, result: CacheResult, ttl?: number): void => {
+    const key = this.createHashKey(entity, data);
 
-    if (cacheRecord) {
-      return cacheRecord.result;
+    // Clean expired entries periodically (every 10th set operation)
+    if (this.cache.size % 10 === 0) {
+      this.cleanExpired();
     }
 
-    return null;
+    this.cache.set(key, {
+      entity,
+      data,
+      result,
+      timestamp: Date.now(),
+      ttl: ttl || this.DEFAULT_TTL,
+    });
   };
 
-  /* It's a method that takes in entity and data . It then checks if the record exists and if it
-      doesn't it pushes it to the cache. */
+  /**
+   * Get a cache entry if it exists and hasn't expired
+   */
+  public get = (entity: string, data: string): CacheResult | null => {
+    const key = this.createHashKey(entity, data);
+    const entry = this.cache.get(key);
+
+    if (!entry) {
+      return null;
+    }
+
+    // Check if entry has expired
+    const now = Date.now();
+    if (now - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return entry.result;
+  };
+
+  /**
+   * Check if a cache record exists and is valid
+   */
   public recordExists = (entity: string, data: string): boolean => {
-    return !!this.get(entity, data);
+    return this.get(entity, data) !== null;
+  };
+
+  /**
+   * Clear all cache entries
+   */
+  public clear = (): void => {
+    this.cache.clear();
+  };
+
+  /**
+   * Get cache statistics
+   */
+  public getStats = () => {
+    return {
+      size: this.cache.size,
+      entries: Array.from(this.cache.values()).map((entry) => ({
+        entity: entry.entity,
+        timestamp: entry.timestamp,
+        ttl: entry.ttl,
+        expired: Date.now() - entry.timestamp > entry.ttl,
+      })),
+    };
   };
 }

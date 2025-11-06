@@ -41,6 +41,22 @@ class Diffy extends BaseDiffy {
     this.workspaceService.on(EventType.WORKSPACE_CHANGED, () => {
       this.onWorkSpaceChanged();
     });
+
+    // Pre-initialize AI services to avoid lazy loading delays during commit generation
+    const provider = this.workspaceService?.getAiServiceProvider();
+    if (provider === "openai") {
+      this.getOpenAPIService();
+    } else if (provider === "gemini") {
+      this.getGeminiService();
+    } else {
+      this.getVsCodeLlmService();
+    }
+
+    // Pre-initialize codebase indexing service if enabled
+    if (this.workspaceService?.getConfiguration().get("enableCodebaseContext")) {
+      this.getCodebaseIndexService();
+    }
+
     this.isEnabled = true;
     logger.info("Diffy extension initialized");
   }
@@ -125,15 +141,21 @@ class Diffy extends BaseDiffy {
   private async prepareDiffWithContext(diff: string): Promise<string> {
     try {
       const strategy = this.workspaceService?.getCodebaseIndexingStrategy();
-      const codebaseContext = await this.getCodebaseIndexService().getCodebaseContext();
+
+      // Parallel fetch: Get codebase context and analyze diff simultaneously
+      const [codebaseContext, diffContext] = await Promise.all([
+        this.getCodebaseIndexService().getCodebaseContext(),
+        strategy === "structured"
+          ? DiffAnalyzer.getInstance().analyzeGitDiff(diff)
+          : Promise.resolve(null),
+      ]);
 
       if (codebaseContext) {
         logger.info("Adding codebase context to prompt", { strategy });
 
         // If using structured mode, also analyze the diff
-        if (strategy === "structured") {
+        if (strategy === "structured" && diffContext) {
           const diffAnalyzer = DiffAnalyzer.getInstance();
-          const diffContext = await diffAnalyzer.analyzeGitDiff(diff);
           const compactDiffSummary = diffAnalyzer.formatAsCompact(diffContext);
 
           return `${codebaseContext}\n\nCHANGES SUMMARY:\n${compactDiffSummary}\n\nDIFF:\n${diff}`;
@@ -489,21 +511,29 @@ class Diffy extends BaseDiffy {
     if (!repo) {
       return;
     }
-    /* Getting the diff of the current git branch. */
+
+    /* Getting the diff of the current git branch and codebase context in parallel */
     let nameOnly = false;
-    let diff = await this.gitService?.getDiffAndWarnUser(repo, nameOnly);
+    const [diff, _] = await Promise.all([
+      this.gitService?.getDiffAndWarnUser(repo, nameOnly),
+      // Pre-warm codebase context cache if enabled
+      this.workspaceService?.getConfiguration().get("enableCodebaseContext")
+        ? this.getCodebaseIndexService().getCodebaseContext()
+        : Promise.resolve(null),
+    ]);
+
     if (!diff) {
       return;
     }
     if (diff && diff.length >= 2100) {
       nameOnly = true;
-      diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
-    }
-    if (!diff) {
-      return;
+      const newDiff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
+      if (!newDiff) {
+        return;
+      }
     }
 
-    // Add codebase context to diff if enabled
+    // Add codebase context to diff if enabled (uses cached context from parallel fetch)
     const enrichedDiff = await this.prepareDiffWithContext(diff);
 
     /* Get AI Service based on provider */

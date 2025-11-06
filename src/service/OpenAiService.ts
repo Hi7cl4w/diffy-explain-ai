@@ -228,7 +228,6 @@ class OpenAiService implements AIService {
         increment: 1,
         message: "\nCommit message generated.",
       });
-      await new Promise((f) => setTimeout(f, 200));
       return response;
     }
     return undefined;

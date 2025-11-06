@@ -318,8 +318,6 @@ class VsCodeLlmService implements AIService {
         message: "\nCommit message generated.",
       });
 
-      await new Promise((f) => setTimeout(f, 200));
-
       return responseText;
     } catch (error: unknown) {
       logger.error("VS Code LLM request failed", error);

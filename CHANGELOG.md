@@ -4,6 +4,21 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.4.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.3.0...diffy-explain-ai-v1.4.0) (2025-11-06)
+
+
+### ✨ Features
+
+* **config:** add codebase indexing strategy setting ([8f27ee7](https://github.com/Hi7cl4w/diffy-explain-ai/commit/8f27ee7f5c6eb801fab8237180a3e20ea8471733))
+* **diff:** integrate DiffAnalyzer with structured mode ([d15fa30](https://github.com/Hi7cl4w/diffy-explain-ai/commit/d15fa30389ed27457a7c6cd9ff555fa8c0cfe4a4))
+* **indexing:** implement multi-strategy codebase indexing ([7210f9e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/7210f9e67ac759605a80e6a995b66796beab8859))
+* **service:** add DiffAnalyzer for analyzing git diffs ([dcb188e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/dcb188edcef78ad17b7216b8e6522f0849a9a6ec))
+
+
+### ♻️ Code Refactoring
+
+* **logging:** replace sendToOutput with structured logger ([b03fdde](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b03fddef78ab14616e7c538f98406da3544a8f03))
+
 ## [1.3.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.2.1...diffy-explain-ai-v1.3.0) (2025-11-04)
 
 

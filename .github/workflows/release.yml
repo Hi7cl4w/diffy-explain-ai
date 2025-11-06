@@ -79,6 +79,11 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: vsce publish -p $VSCE_PAT --packagePath diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
 
+      - name: Publish to OpenVSX
+        env:
+          OPENVSX_PAT: ${{ secrets.OPENVSX_PAT }}
+        run: vsce publish -p $OPENVSX_PAT --openvsx --packagePath diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -117,6 +122,7 @@ jobs:
           echo "- **Version**: ${{ needs.release-please.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Extension Package**: diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix" >> $GITHUB_STEP_SUMMARY
           echo "- **Marketplace**: Published ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- **OpenVSX**: Published ✅" >> $GITHUB_STEP_SUMMARY
           echo "- **GitHub Release**: Created ✅" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Install" >> $GITHUB_STEP_SUMMARY

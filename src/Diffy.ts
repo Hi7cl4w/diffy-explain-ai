@@ -606,6 +606,42 @@ class Diffy extends BaseDiffy {
   }
 
   /**
+   * Update staged changes when Git staging area changes
+   * Pre-warms diff context preparation in background for faster commit generation
+   */
+  async updateStagedChanges() {
+    try {
+      // Check if we have a valid workspace and repo
+      if (!this.workspaceService?.checkAndWarnWorkSpaceExist()) {
+        return;
+      }
+      if (!this.gitService?.checkAndWarnRepoExist()) {
+        return;
+      }
+
+      const repo = this.gitService?.getCurrentRepo();
+      if (!repo) {
+        return;
+      }
+
+      // Get current staged diff in background
+      const diff = await this.gitService?.getDiffAndWarnUser(repo, false);
+      if (!diff) {
+        return;
+      }
+
+      // Pre-warm the diff context preparation in background
+      this.prepareDiffWithContext(diff).catch((error) => {
+        logger.error("Error pre-warming diff context", error);
+      });
+
+      logger.info("Staged changes updated - pre-warming diff context");
+    } catch (error) {
+      logger.error("Error in updateStagedChanges", error);
+    }
+  }
+
+  /**
    * Dispose all objects
    */
   dispose() {

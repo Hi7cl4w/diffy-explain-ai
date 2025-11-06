@@ -154,7 +154,7 @@
         "diffy-explain-ai.customCommitPrompt": {
           "type": "string",
           "order": 5,
-          "default": "Generate a commit message for the following git diff.\n\nRequirements:\n- Maximum subject length: {maxLength} characters\n- Use imperative mood\n- Be concise and clear{bodyInstructions}\n\nReturn ONLY the commit message, no explanations.",
+          "default": "Generate a commit message for the following git diff.\n\nRequirements:\n- Maximum subject length: {maxLength} characters\n- Use imperative mood\n- Be concise and clear{bodyInstructions}\n\nReturn ONLY the commit message, no explanations.\nDo not wrap the response in code blocks, backticks, or any markdown formatting.",
           "editPresentation": "multilineText",
           "markdownDescription": "Custom prompt template for commit message generation.\n\nAvailable placeholders: `{maxLength}`, `{bodyInstructions}`, `{locale}`, `{diff}`.\n\nUsed when Commit Message Type is set to `custom`."
         },
@@ -236,10 +236,10 @@
         "diffy-explain-ai.maxIndexedFileSize": {
           "type": "number",
           "order": 10,
-          "default": 100,
+          "default": 50,
           "minimum": 10,
           "maximum": 500,
-          "markdownDescription": "**Maximum File Size for Analysis**\n\nFiles larger than this are skipped during codebase indexing.\n\n**Default:** 100 KB (sufficient for most config files)\n\n**Guidelines:**\n- `50 KB` - Conservative (skips larger READMEs)\n- `100 KB` - Balanced *(recommended)*\n- `200+ KB` - Permissive (may include large docs)\n\n> Larger limits increase token usage and API costs."
+          "markdownDescription": "**Maximum File Size for Analysis**\n\nFiles larger than this are skipped during codebase indexing.\n\n**Default:** 50 KB (conservative, skips larger READMEs)\n\n**Guidelines:**\n- `50 KB` - Conservative *(recommended)*\n- `100 KB` - Balanced (sufficient for most config files)\n- `200+ KB` - Permissive (may include large docs)\n\n> Larger limits increase token usage and API costs."
         },
         "diffy-explain-ai.codebaseContextTokenBudget": {
           "type": "number",

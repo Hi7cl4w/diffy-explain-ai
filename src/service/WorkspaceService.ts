@@ -167,7 +167,8 @@ Requirements:
 - Use imperative mood
 - Be concise and clear{bodyInstructions}
 
-Return ONLY the commit message, no explanations.`;
+Return ONLY the commit message, no explanations.
+Do not wrap the response in code blocks, backticks, or any markdown formatting.`;
   }
 
   getIncludeCommitBody() {

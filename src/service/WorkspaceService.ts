@@ -217,23 +217,134 @@ Return ONLY the commit message, no explanations.`;
     if (Array.isArray(value)) {
       return value;
     }
-    // Default indexed files
+    // Enhanced default indexed files with auto-detection support
     return [
-      "package.json",
-      "README.md",
-      "Cargo.toml",
-      "go.mod",
-      "pom.xml",
-      "build.gradle",
-      "pyproject.toml",
-      "setup.py",
-      "composer.json",
+      "auto", // Enable auto-detection of project files
     ];
   }
 
   getMaxIndexedFileSize(): number {
     const value = this.getConfiguration().get("maxIndexedFileSize");
-    return typeof value === "number" ? value : 50;
+    return typeof value === "number" ? value : 100; // Increased from 50KB to 100KB
+  }
+
+  getCodebaseContextTokenBudget(): number {
+    const value = this.getConfiguration().get("codebaseContextTokenBudget");
+    return typeof value === "number" && value > 0 ? value : 2000; // Default 2000 tokens
+  }
+
+  getCodebaseIndexingStrategy(): "compact" | "structured" | "ast-based" {
+    const value = this.getConfiguration().get("codebaseIndexingStrategy");
+    if (value === "structured" || value === "ast-based") {
+      return value;
+    }
+    return "compact"; // Default
+  }
+
+  /**
+   * Builds unified commit message generation instructions for all AI providers
+   * @returns {string} The formatted instructions based on commit type and settings
+   */
+  getCommitMessageInstructions(): string {
+    const commitType = this.getCommitMessageType();
+    const includeBody = this.getIncludeCommitBody();
+    const maxLength = this.getMaxCommitMessageLength();
+    const additionalInstructions = this.getAdditionalInstructions();
+
+    let instructions = "";
+
+    if (commitType === "custom") {
+      // Custom user-defined template with placeholder replacement
+      const customTemplate = this.getCustomCommitPrompt();
+
+      // Prepare body instructions based on includeBody setting
+      const bodyInstructions = includeBody
+        ? "\n- Include a body section with 2-4 bullet points explaining the changes"
+        : "";
+
+      // Replace placeholders
+      instructions = customTemplate
+        .replace(/{maxLength}/g, String(maxLength))
+        .replace(/{bodyInstructions}/g, bodyInstructions)
+        .replace(/{locale}/g, "en") // Could be made configurable if needed
+        .replace(/{diff}/g, ""); // We append diff separately
+
+      // Add additional instructions if provided (unless already in template)
+      if (additionalInstructions && !customTemplate.includes(additionalInstructions)) {
+        instructions += `\n\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}`;
+      }
+    } else if (commitType === "gitmoji") {
+      instructions = `You are an expert Git commit message generator that uses Gitmoji (emoji-based commits).
+
+Analyze the provided git diff and generate a commit message following the Gitmoji specification:
+
+FORMAT: <emoji> <type>[optional scope]: <description>
+
+Common Gitmoji mappings:
+- ✨ :sparkles: - New feature (feat)
+- 🐛 :bug: - Bug fix (fix)
+- 📝 :memo: - Documentation (docs)
+- 💄 :lipstick: - UI/styling (style)
+- ♻️ :recycle: - Code refactoring (refactor)
+- ⚡️ :zap: - Performance improvement (perf)
+- ✅ :white_check_mark: - Tests (test)
+- 🔧 :wrench: - Configuration (chore)
+- 🔨 :hammer: - Build/tooling (build)
+- 🚀 :rocket: - Deployment (ci)
+
+REQUIREMENTS:
+1. Subject line must NOT exceed ${maxLength} characters
+2. Use imperative mood (e.g., "add" not "added")
+3. Do not end subject with a period
+4. Start with the appropriate emoji${
+        includeBody
+          ? "\n5. Include a body section with 2-4 bullet points explaining key changes"
+          : ""
+      }
+
+${additionalInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n` : ""}
+
+Return ONLY the commit message, no explanations or surrounding text.`;
+    } else {
+      // Conventional Commits format
+      instructions = `You are an expert Git commit message generator following Conventional Commits specification.
+
+Analyze the provided git diff and generate a commit message following this format:
+
+<type>[optional scope]: <description>
+${includeBody ? "\n[optional body]\n" : ""}
+[optional footer(s)]
+
+COMMIT TYPES:
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- style: Changes that don't affect code meaning (formatting, missing semicolons, etc.)
+- refactor: Code change that neither fixes a bug nor adds a feature
+- perf: Code change that improves performance
+- test: Adding missing tests or correcting existing tests
+- build: Changes to build system or external dependencies
+- ci: Changes to CI configuration files and scripts
+- chore: Other changes that don't modify src or test files
+- revert: Reverts a previous commit
+
+REQUIREMENTS:
+1. Subject line must NOT exceed ${maxLength} characters
+2. Use imperative mood (e.g., "add" not "added")
+3. Do not capitalize first letter after type
+4. Do not end subject with a period
+5. Choose the most specific scope when applicable (e.g., "auth", "api", "ui")${
+        includeBody
+          ? "\n6. Include a body section with 2-4 bullet points explaining:\n   - What changed\n   - Why it changed\n   - Any important implementation details"
+          : ""
+      }
+
+${additionalInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n` : ""}
+
+Return ONLY the commit message, no explanations or surrounding text.`;
+    }
+
+    return instructions;
   }
 
   /**

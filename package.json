@@ -188,7 +188,7 @@
           "type": "boolean",
           "order": 8,
           "default": false,
-          "markdownDescription": "Include project context in AI prompts for better commit messages.\n\nAnalyzes key project files to provide better scope suggestions and understand your tech stack.\n\n> **Experimental**: Increases token usage and API costs."
+          "markdownDescription": "**⚡ Smart Codebase Analysis**\n\nAutomatically analyzes your project files to provide contextually aware commit messages.\n\n**Features:**\n- Auto-detects project type (JS/TS, Rust, Go, Python, etc.)\n- Extracts key dependencies and tech stack\n- Understands project structure and conventions\n- Minimal token usage (2000 tokens by default)\n\n**Benefits:**\n- More accurate commit scopes (e.g., `feat(auth)` vs generic `feat`)\n- Technology-aware messages (mentions React, TypeScript, etc.)\n- Better dependency change descriptions\n\n> ⚠️ Increases API token usage slightly but improves commit quality significantly."
         },
         "diffy-explain-ai.indexedFiles": {
           "type": "array",
@@ -197,46 +197,52 @@
             "type": "string"
           },
           "default": [
-            "package.json",
-            "README.md",
-            "tsconfig.json",
-            "Cargo.toml",
-            "go.mod",
-            "pom.xml",
-            "build.gradle",
-            "pyproject.toml",
-            "composer.json"
+            "auto"
           ],
           "editPresentation": "multilineText",
-          "markdownDescription": "Files to analyze for codebase context.\n\nCommon examples: `package.json`, `README.md`, `tsconfig.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `pyproject.toml`.\n\n> **Tip**: Keep list focused to minimize token usage.",
+          "markdownDescription": "**Project Files for Context Analysis**\n\nFiles to analyze for understanding your codebase.\n\n**Default:** `[\"auto\"]` - Automatically detects relevant files\n\n**Auto-Detection finds:**\n- Package manifests (package.json, Cargo.toml, go.mod, pyproject.toml, etc.)\n- Config files (tsconfig.json, vite.config.ts, etc.)\n- Documentation (README.md)\n- Build configs (webpack.config.js, etc.)\n\n**Manual Mode:** Replace `[\"auto\"]` with specific files:\n```json\n[\"package.json\", \"tsconfig.json\", \"README.md\"]\n```\n\n> 💡 **Best Practice:** Use `auto` for zero configuration, or manually specify 3-5 key files to minimize tokens.",
           "examples": [
+            "auto",
             "package.json",
             "README.md",
-            "CONTRIBUTING.md",
             "tsconfig.json",
-            "webpack.config.js",
             "vite.config.ts",
             "Cargo.toml",
             "go.mod",
-            "pom.xml",
-            "build.gradle",
-            "settings.gradle",
-            "pyproject.toml",
-            "setup.py",
-            "requirements.txt",
-            "composer.json",
-            "Gemfile",
-            ".github/workflows/*.yml",
-            "docs/architecture.md"
+            "pyproject.toml"
           ]
         },
         "diffy-explain-ai.maxIndexedFileSize": {
           "type": "number",
           "order": 10,
-          "default": 50,
+          "default": 100,
           "minimum": 10,
           "maximum": 500,
-          "markdownDescription": "Maximum file size (KB) for codebase indexing.\n\nLarger files are skipped to control token usage.\n\n**Range**: 10-500 KB"
+          "markdownDescription": "**Maximum File Size for Analysis**\n\nFiles larger than this are skipped during codebase indexing.\n\n**Default:** 100 KB (sufficient for most config files)\n\n**Guidelines:**\n- `50 KB` - Conservative (skips larger READMEs)\n- `100 KB` - Balanced *(recommended)*\n- `200+ KB` - Permissive (may include large docs)\n\n> Larger limits increase token usage and API costs."
+        },
+        "diffy-explain-ai.codebaseContextTokenBudget": {
+          "type": "number",
+          "order": 11,
+          "default": 2000,
+          "minimum": 500,
+          "maximum": 10000,
+          "markdownDescription": "**Token Budget for Codebase Context**\n\nMaximum tokens allocated for project context analysis.\n\n**Default:** 2000 tokens (~1500 words)\n\n**Recommendations:**\n- `1000` - Minimal (basic project info only)\n- `2000` - Optimal *(recommended for most projects)*\n- `3000+` - Comprehensive (large monorepos)\n- `5000+` - Maximum (complex multi-language projects)\n\n**What fits in tokens:**\n- 1000: package.json dependencies + README summary\n- 2000: Above + tsconfig + 2-3 more files\n- 3000+: Comprehensive project analysis\n\n> ⚠️ Higher budgets = better context but increased API costs.\n>\n> 💡 The extension uses smart extraction to maximize value per token."
+        },
+        "diffy-explain-ai.codebaseIndexingStrategy": {
+          "type": "string",
+          "order": 12,
+          "enum": [
+            "compact",
+            "structured",
+            "ast-based"
+          ],
+          "enumDescriptions": [
+            "Ultra-compact single-line format (minimal tokens, fast)",
+            "Structured JSON with file metadata, changes, and function analysis",
+            "AST-based semantic analysis with function signatures and call graphs"
+          ],
+          "default": "compact",
+          "markdownDescription": "**Codebase Indexing Strategy**\n\nChoose how code context is analyzed and formatted for AI.\n\n**Strategies:**\n\n1. **compact** *(Default, Recommended)*\n   - Ultra-minimal token usage (~800 tokens for 4 files)\n   - Single-line format: `PROJECT: tech • scripts`\n   - Best for: Most projects, cost optimization\n   - Speed: ⚡ Fastest\n\n2. **structured**\n   - JSON format with detailed metadata\n   - Includes: file paths, line changes, modified functions, imports\n   - Best for: Complex changes, detailed analysis\n   - Speed: ⚡⚡ Fast\n   - Example:\n   ```json\n   {\n     \"files\": [{\n       \"path\": \"src/auth.ts\",\n       \"changes\": { \"added\": 15, \"deleted\": 3 },\n       \"functions_modified\": [\"login\", \"validate\"]\n     }]\n   }\n   ```\n\n3. **ast-based**\n   - Parse code using AST (Abstract Syntax Tree)\n   - Extracts: function signatures, class definitions, dependencies\n   - Best for: Large refactors, semantic understanding\n   - Speed: ⚡⚡⚡ Slower (parses code)\n   - Provides: Most accurate understanding\n\n> 💡 **Token Usage:** compact < structured < ast-based\n>\n> ⚠️ **Cost Impact:** Higher strategies use more tokens but provide richer context."
         },
         "diffy-explain-ai.vscodeLmModel": {
           "type": "string",

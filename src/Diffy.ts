@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { type ExtensionContext, env } from "vscode";
 import { EventType } from "./@types/EventType";
 import BaseDiffy from "./BaseDiffy";
+import CodebaseIndexService from "./service/CodebaseIndexService";
+import DiffAnalyzer from "./service/DiffAnalyzer";
 import GeminiService from "./service/GeminiService";
 import GitService from "./service/GitService";
 import OpenAiService from "./service/OpenAiService";
@@ -17,6 +19,7 @@ class Diffy extends BaseDiffy {
   private _vsCodeLlmService: VsCodeLlmService | null = null;
   private _geminiService: GeminiService | null = null;
   private workspaceService: WorkspaceService | null = null;
+  private _codebaseIndexService: CodebaseIndexService | null = null;
   isEnabled = false;
   private _windowsService: WindowService | null = null;
   context!: ExtensionContext;
@@ -105,6 +108,45 @@ class Diffy extends BaseDiffy {
       this._windowsService = WindowService.getInstance();
     }
     return this._windowsService;
+  }
+
+  getCodebaseIndexService(): CodebaseIndexService {
+    if (!this._codebaseIndexService) {
+      this._codebaseIndexService = CodebaseIndexService.getInstance();
+    }
+    return this._codebaseIndexService;
+  }
+
+  /**
+   * Prepare diff with optional codebase context
+   * @param diff - The git diff string
+   * @returns {Promise<string>} Diff possibly enriched with project context
+   */
+  private async prepareDiffWithContext(diff: string): Promise<string> {
+    try {
+      const strategy = this.workspaceService?.getCodebaseIndexingStrategy();
+      const codebaseContext = await this.getCodebaseIndexService().getCodebaseContext();
+
+      if (codebaseContext) {
+        sendToOutput(`Adding codebase context (${strategy} mode) to prompt`);
+
+        // If using structured mode, also analyze the diff
+        if (strategy === "structured") {
+          const diffAnalyzer = DiffAnalyzer.getInstance();
+          const diffContext = await diffAnalyzer.analyzeGitDiff(diff);
+          const compactDiffSummary = diffAnalyzer.formatAsCompact(diffContext);
+
+          return `${codebaseContext}\n\nCHANGES SUMMARY:\n${compactDiffSummary}\n\nDIFF:\n${diff}`;
+        }
+
+        // For compact and ast-based modes, use minimal format
+        return `${codebaseContext}\n\nDIFF:\n${diff}`;
+      }
+    } catch (error) {
+      sendToOutput(`Error getting codebase context: ${error}`);
+    }
+
+    return diff;
   }
 
   async explainAndPreview() {
@@ -344,6 +386,9 @@ class Diffy extends BaseDiffy {
       return;
     }
 
+    // Add codebase context to diff if enabled
+    const enrichedDiff = await this.prepareDiffWithContext(diff);
+
     /* Get AI Service based on provider */
     let changes: string | null = null;
 
@@ -352,17 +397,25 @@ class Diffy extends BaseDiffy {
       if (!apiKey) {
         return;
       }
-      changes = await this.getOpenAPIService().getCommitMessageFromDiff(diff, apiKey, nameOnly);
+      changes = await this.getOpenAPIService().getCommitMessageFromDiff(
+        enrichedDiff,
+        apiKey,
+        nameOnly,
+      );
     } else if (provider === "gemini") {
       const apiKey = this.workspaceService?.getGeminiKey();
       if (!apiKey) {
         return;
       }
-      changes = await this.getGeminiService().getCommitMessageFromDiff(diff, apiKey, nameOnly);
+      changes = await this.getGeminiService().getCommitMessageFromDiff(
+        enrichedDiff,
+        apiKey,
+        nameOnly,
+      );
     } else {
       // VS Code LLM - try with fallback to OpenAI if it fails
       try {
-        changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(diff, nameOnly);
+        changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(enrichedDiff, nameOnly);
       } catch (error) {
         // If VS Code LM fails with model not supported error, try OpenAI as fallback
         if (
@@ -376,7 +429,7 @@ class Diffy extends BaseDiffy {
           const apiKey = this.workspaceService?.getOpenAIKey();
           if (apiKey) {
             changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-              diff,
+              enrichedDiff,
               apiKey,
               nameOnly,
             );
@@ -450,6 +503,9 @@ class Diffy extends BaseDiffy {
       return;
     }
 
+    // Add codebase context to diff if enabled
+    const enrichedDiff = await this.prepareDiffWithContext(diff);
+
     /* Get AI Service based on provider */
     let changes: string | null = null;
 
@@ -459,7 +515,7 @@ class Diffy extends BaseDiffy {
         return;
       }
       changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-        diff,
+        enrichedDiff,
         apiKey,
         nameOnly,
         progress,
@@ -470,7 +526,7 @@ class Diffy extends BaseDiffy {
         return;
       }
       changes = await this.getGeminiService().getCommitMessageFromDiff(
-        diff,
+        enrichedDiff,
         apiKey,
         nameOnly,
         progress,
@@ -479,7 +535,7 @@ class Diffy extends BaseDiffy {
       // VS Code LLM - try with fallback to OpenAI if it fails
       try {
         changes = await this.getVsCodeLlmService().getCommitMessageFromDiff(
-          diff,
+          enrichedDiff,
           nameOnly,
           progress,
         );
@@ -496,7 +552,7 @@ class Diffy extends BaseDiffy {
           const apiKey = this.workspaceService?.getOpenAIKey();
           if (apiKey) {
             changes = await this.getOpenAPIService().getCommitMessageFromDiff(
-              diff,
+              enrichedDiff,
               apiKey,
               nameOnly,
               progress,
@@ -529,6 +585,7 @@ class Diffy extends BaseDiffy {
     this._vsCodeLlmService = null;
     this._geminiService = null;
     this.workspaceService = null;
+    this._codebaseIndexService = null;
   }
 }
 

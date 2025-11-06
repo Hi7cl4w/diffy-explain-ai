@@ -2,7 +2,7 @@
   "name": "diffy-explain-ai",
   "displayName": "Diffy - AI Commit Messages with Context",
   "description": "Generate Commit Message for You or Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "publisher": "hitclaw",
   "engines": {
     "vscode": "^1.105.0"

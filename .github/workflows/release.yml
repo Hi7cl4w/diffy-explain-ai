@@ -79,10 +79,18 @@ jobs:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: vsce publish -p $VSCE_PAT --packagePath diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
 
+      - name: Install ovsx CLI
+        run: npm install -g ovsx
+
+      - name: Create OpenVSX namespace (if not exists)
+        env:
+          OPENVSX_PAT: ${{ secrets.OPENVSX_PAT }}
+        run: ovsx create-namespace hitclaw -p $OPENVSX_PAT || echo "Namespace already exists or creation failed"
+
       - name: Publish to OpenVSX
         env:
           OPENVSX_PAT: ${{ secrets.OPENVSX_PAT }}
-        run: vsce publish -p $OPENVSX_PAT --openvsx --packagePath diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix
+        run: ovsx publish diffy-explain-ai-${{ needs.release-please.outputs.version }}.vsix -p $OPENVSX_PAT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

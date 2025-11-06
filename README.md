@@ -1,6 +1,7 @@
 # Diffy - AI Commit Messages with Context
 
 [![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/hitclaw.diffy-explain-ai?label=Visual%20Studio%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=hitclaw.diffy-explain-ai)
+[![OpenVSX Downloads](https://img.shields.io/open-vsx/dt/hitclaw/diffy-explain-ai?label=OpenVSX)](https://open-vsx.org/extension/hitclaw/diffy-explain-ai)
 [![CI](https://github.com/Hi7cl4w/diffy-explain-ai/actions/workflows/main.yml/badge.svg)](https://github.com/Hi7cl4w/diffy-explain-ai/actions/workflows/main.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -24,6 +25,14 @@
 2. Go to Extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`)
 3. Search for "Diffy"
 4. Click **Install**
+
+### From OpenVSX
+
+[![OpenVSX](https://img.shields.io/badge/OpenVSX-Download-blue)](https://open-vsx.org/extension/hitclaw/diffy-explain-ai)
+
+1. Visit [OpenVSX](https://open-vsx.org/extension/hitclaw/diffy-explain-ai)
+2. Click **Download**
+3. Install the `.vsix` file in VS Code
 
 ### From Command Line
 

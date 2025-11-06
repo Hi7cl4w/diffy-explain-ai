@@ -10,6 +10,9 @@
   "categories": [
     "SCM Providers"
   ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "repository": {
     "url": "https://github.com/Hi7cl4w/diffy-explain-ai.git"
   },

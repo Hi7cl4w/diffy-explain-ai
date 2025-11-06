@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type * as vscode from "vscode";
 import { window } from "vscode";
+import { cleanAiResponse } from "../utils/aiResponse";
 import { clearOutput, sendToOutput } from "../utils/log";
 import { CacheService } from "./CacheService";
 import WorkspaceService from "./WorkspaceService";
@@ -49,17 +50,12 @@ class OpenAiService implements AIService {
       increment?: number | undefined;
     }>,
   ): Promise<string | null> {
-    const instructions = WorkspaceService.getInstance().getAdditionalInstructions();
-    if (!instructions) {
-      return null;
-    }
+    const instructions = WorkspaceService.getInstance().getCommitMessageInstructions();
+
     const response = await this.getFromOpenApi(instructions, code, openAIKey, progress);
     if (response && response.choices.length > 0 && response.choices[0].message) {
-      let message = String(response?.choices[0].message.content);
-      message = message.trim();
-      message = message.replace(/^"/gm, "");
-      message = message.replace(/"$/gm, "");
-      return message;
+      const message = String(response?.choices[0].message.content);
+      return cleanAiResponse(message);
     }
     return null;
   }
@@ -81,11 +77,8 @@ class OpenAiService implements AIService {
       "' that user given. commit message should be a multiple lines where first line doesn't exceeds '50' characters by following commit message guidelines based on the given git diff changes without mentioning itself";
     const response = await this.getFromOpenApi(instructions, code, openAIKey);
     if (response && response.choices.length > 0 && response.choices[0].message) {
-      let message = String(response?.choices[0].message.content);
-      message = message.trim();
-      message = message.replace(/^"/gm, "");
-      message = message.replace(/"$/gm, "");
-      return message;
+      const message = String(response?.choices[0].message.content);
+      return cleanAiResponse(message);
     }
     return null;
   }

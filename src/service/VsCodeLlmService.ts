@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { window } from "vscode";
+import { cleanAiResponse } from "../utils/aiResponse";
 import { clearOutput, sendToOutput } from "../utils/log";
 import { CacheService } from "./CacheService";
 import WorkspaceService from "./WorkspaceService";
@@ -39,111 +40,12 @@ class VsCodeLlmService implements AIService {
     }>,
   ): Promise<string | null> {
     const workspaceService = WorkspaceService.getInstance();
-    const commitType = workspaceService.getCommitMessageType();
-    const includeBody = workspaceService.getIncludeCommitBody();
-    const maxLength = workspaceService.getMaxCommitMessageLength();
-    const additionalInstructions = workspaceService.getAdditionalInstructions();
+    const instructions = workspaceService.getCommitMessageInstructions();
 
-    // Build enhanced prompt based on commit type and settings
-    let instructions = "";
-
-    if (commitType === "custom") {
-      // Custom user-defined template with placeholder replacement
-      const customTemplate = workspaceService.getCustomCommitPrompt();
-
-      // Prepare body instructions based on includeBody setting
-      const bodyInstructions = includeBody
-        ? "\n- Include a body section with 2-4 bullet points explaining the changes"
-        : "";
-
-      // Replace placeholders
-      instructions = customTemplate
-        .replace(/{maxLength}/g, String(maxLength))
-        .replace(/{bodyInstructions}/g, bodyInstructions)
-        .replace(/{locale}/g, "en") // Could be made configurable if needed
-        .replace(/{diff}/g, ""); // We append diff separately
-
-      // Add additional instructions if provided (unless already in template)
-      if (additionalInstructions && !customTemplate.includes(additionalInstructions)) {
-        instructions += `\n\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}`;
-      }
-    } else if (commitType === "gitmoji") {
-      instructions = `You are an expert Git commit message generator that uses Gitmoji (emoji-based commits).
-
-Analyze the provided git diff and generate a commit message following the Gitmoji specification:
-
-FORMAT: <emoji> <type>[optional scope]: <description>
-
-Common Gitmoji mappings:
-- ✨ :sparkles: - New feature (feat)
-- 🐛 :bug: - Bug fix (fix)
-- 📝 :memo: - Documentation (docs)
-- 💄 :lipstick: - UI/styling (style)
-- ♻️ :recycle: - Code refactoring (refactor)
-- ⚡️ :zap: - Performance improvement (perf)
-- ✅ :white_check_mark: - Tests (test)
-- 🔧 :wrench: - Configuration (chore)
-- 🔨 :hammer: - Build/tooling (build)
-- 🚀 :rocket: - Deployment (ci)
-
-REQUIREMENTS:
-1. Subject line must NOT exceed ${maxLength} characters
-2. Use imperative mood (e.g., "add" not "added")
-3. Do not end subject with a period
-4. Start with the appropriate emoji${
-        includeBody
-          ? "\n5. Include a body section with 2-4 bullet points explaining key changes"
-          : ""
-      }
-
-${additionalInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n` : ""}
-
-Return ONLY the commit message, no explanations or surrounding text.`;
-    } else {
-      // Conventional Commits format
-      instructions = `You are an expert Git commit message generator following Conventional Commits specification.
-
-Analyze the provided git diff and generate a commit message following this format:
-
-<type>[optional scope]: <description>
-${includeBody ? "\n[optional body]\n" : ""}
-[optional footer(s)]
-
-COMMIT TYPES:
-- feat: A new feature
-- fix: A bug fix
-- docs: Documentation only changes
-- style: Changes that don't affect code meaning (formatting, missing semicolons, etc.)
-- refactor: Code change that neither fixes a bug nor adds a feature
-- perf: Code change that improves performance
-- test: Adding missing tests or correcting existing tests
-- build: Changes to build system or external dependencies
-- ci: Changes to CI configuration files and scripts
-- chore: Other changes that don't modify src or test files
-- revert: Reverts a previous commit
-
-REQUIREMENTS:
-1. Subject line must NOT exceed ${maxLength} characters
-2. Use imperative mood (e.g., "add" not "added")
-3. Do not capitalize first letter after type
-4. Do not end subject with a period
-5. Choose the most specific scope when applicable (e.g., "auth", "api", "ui")${
-        includeBody
-          ? "\n6. Include a body section with 2-4 bullet points explaining:\n   - What changed\n   - Why it changed\n   - Any important implementation details"
-          : ""
-      }
-
-${additionalInstructions ? `\nADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n` : ""}
-
-Return ONLY the commit message, no explanations or surrounding text.`;
-    }
     const response = await this.getFromVsCodeLlm(instructions, code, progress);
 
     if (response) {
-      let message = response.trim();
-      message = message.replace(/^"/gm, "");
-      message = message.replace(/"$/gm, "");
-      return message;
+      return cleanAiResponse(response);
     }
     return null;
   }
@@ -160,10 +62,7 @@ Return ONLY the commit message, no explanations or surrounding text.`;
     const response = await this.getFromVsCodeLlm(instructions, string2);
 
     if (response) {
-      let message = response.trim();
-      message = message.replace(/^"/gm, "");
-      message = message.replace(/"$/gm, "");
-      return message;
+      return cleanAiResponse(response);
     }
     return null;
   }
@@ -206,13 +105,13 @@ Return ONLY the commit message, no explanations or surrounding text.`;
       if (vscodeLmModel === "auto") {
         // Try to select the best available model in order of preference
         const preferredFamilies = [
+          "grok-code-fast-1",
+          "gpt-5-mini",
+          "gpt-4-turbo",
           "gpt-4o",
           "o1",
           "gpt-4",
-          "gpt-4-turbo",
           "o1-mini",
-          "gpt-5-mini",
-          "grok-code-fast-1",
           "gpt-3.5-turbo",
           "o1-preview",
           "gpt-3.5",

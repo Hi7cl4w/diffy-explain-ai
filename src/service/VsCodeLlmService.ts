@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { window } from "vscode";
 import { cleanAiResponse } from "../utils/aiResponse";
-import { clearOutput, sendToOutput } from "../utils/log";
+import { logger } from "../utils/log";
 import { CacheService } from "./CacheService";
 import WorkspaceService from "./WorkspaceService";
 
@@ -89,15 +89,15 @@ class VsCodeLlmService implements AIService {
     const exist = this.cacheService.recordExists(vscodeLmModel, cacheKey);
     if (exist) {
       const result = this.cacheService.get(vscodeLmModel, cacheKey) as string;
-      sendToOutput(`result (cached): ${result}`);
+      logger.debug("VS Code LLM cache hit", { model: vscodeLmModel });
       return result;
     }
 
     try {
-      clearOutput();
-      sendToOutput(`instructions: ${instructions}`);
-      sendToOutput(`git diff prompt: ${prompt}`);
-      sendToOutput(`model: ${vscodeLmModel}`);
+      logger.clear();
+      logger.info("VS Code LLM request", { model: vscodeLmModel });
+      logger.trace("System instructions", instructions);
+      logger.trace("User prompt", prompt);
 
       // Select the appropriate model based on settings
       let models: vscode.LanguageModelChat[] = [];
@@ -277,7 +277,11 @@ class VsCodeLlmService implements AIService {
       }
 
       const [model] = models;
-      sendToOutput(`Selected model: ${model.id} (${model.vendor}/${model.family})`);
+      logger.info("Selected VS Code LLM model", {
+        id: model.id,
+        vendor: model.vendor,
+        family: model.family,
+      });
 
       progress?.report({ increment: 30 });
 
@@ -299,7 +303,10 @@ class VsCodeLlmService implements AIService {
         responseText += fragment;
       }
 
-      sendToOutput(`result success: ${responseText}`);
+      logger.info("VS Code LLM response received", {
+        responseLength: responseText.length,
+      });
+      logger.debug("VS Code LLM full response", responseText);
 
       // Cache the result
       if (responseText && responseText.length > 6) {
@@ -315,8 +322,8 @@ class VsCodeLlmService implements AIService {
 
       return responseText;
     } catch (error: unknown) {
+      logger.error("VS Code LLM request failed", error);
       console.error(error);
-      sendToOutput(`result failed: ${JSON.stringify(error)}`);
 
       if (error instanceof vscode.LanguageModelError) {
         // Handle specific LLM errors

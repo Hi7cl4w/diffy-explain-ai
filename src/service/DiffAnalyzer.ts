@@ -1,4 +1,4 @@
-import { sendToOutput } from "../utils/log";
+import { logger } from "../utils/log";
 
 /**
  * Structured representation of a file change
@@ -56,7 +56,7 @@ export default class DiffAnalyzer {
    * @returns Structured diff context
    */
   async analyzeGitDiff(diff: string): Promise<DiffContext> {
-    sendToOutput("Starting structured diff analysis");
+    logger.info("Starting structured diff analysis");
 
     const files: FileChange[] = [];
     const affectedModules = new Set<string>();
@@ -112,7 +112,7 @@ export default class DiffAnalyzer {
       },
     };
 
-    sendToOutput(`Analyzed ${files.length} files: +${totalAdditions} -${totalDeletions}`);
+    logger.info(`Analyzed ${files.length} files: +${totalAdditions} -${totalDeletions}`);
 
     return context;
   }

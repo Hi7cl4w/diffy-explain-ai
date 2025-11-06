@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import type * as vscode from "vscode";
 import { window } from "vscode";
 import { cleanAiResponse } from "../utils/aiResponse";
-import { clearOutput, sendToOutput } from "../utils/log";
+import { logger } from "../utils/log";
 import { CacheService } from "./CacheService";
 import WorkspaceService from "./WorkspaceService";
 
@@ -106,7 +106,7 @@ class OpenAiService implements AIService {
         model,
         instructions + prompt,
       ) as OpenAI.Chat.Completions.ChatCompletion;
-      sendToOutput(`result: ${JSON.stringify(result)}`);
+      logger.debug("OpenAI cache hit", { model });
       return result;
     }
     if (!openAIKey) {
@@ -136,22 +136,28 @@ class OpenAiService implements AIService {
       temperature: WorkspaceService.getInstance().getTemp(),
       max_tokens: WorkspaceService.getInstance().getMaxTokens(),
     };
-    clearOutput();
-    sendToOutput(`instructions: ${instructions}`);
-    sendToOutput(`git diff prompt: ${prompt}`);
-    sendToOutput(`base url: ${openAiClient.baseURL}`);
-    sendToOutput(`model: ${params.model}`);
-    sendToOutput(`max_tokens: ${params.max_tokens}`);
-    sendToOutput(`temperature: ${params.temperature}`);
+    logger.clear();
+    logger.info("OpenAI request", {
+      baseUrl: openAiClient.baseURL,
+      model: params.model,
+      maxTokens: params.max_tokens,
+      temperature: params.temperature,
+    });
+    logger.trace("System instructions", instructions);
+    logger.trace("User prompt", prompt);
 
     let response: OpenAI.Chat.Completions.ChatCompletion | undefined;
     try {
       response = await openAiClient.chat.completions.create(params);
-      sendToOutput(`result success: ${JSON.stringify(response)}`);
+      logger.info("OpenAI response received", {
+        usage: response.usage,
+        model: response.model,
+      });
+      logger.debug("OpenAI full response", response);
       progress?.report({ increment: 49 });
     } catch (reason: unknown) {
+      logger.error("OpenAI request failed", reason);
       console.error(reason);
-      sendToOutput(`result failed: ${JSON.stringify(reason)}`);
 
       // Type guard for error with response property
       const hasResponse = (

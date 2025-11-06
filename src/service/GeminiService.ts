@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import type * as vscode from "vscode";
 import { window } from "vscode";
 import { cleanAiResponse } from "../utils/aiResponse";
-import { clearOutput, sendToOutput } from "../utils/log";
+import { logger } from "../utils/log";
 import { CacheService } from "./CacheService";
 import WorkspaceService from "./WorkspaceService";
 
@@ -84,18 +84,20 @@ class GeminiService implements AIService {
 
     if (exist) {
       const result = this.cacheService.get(model, instructions + prompt) as string;
-      sendToOutput(`result: ${JSON.stringify(result)}`);
+      logger.debug("Gemini cache hit", { model });
       return result;
     }
 
     progress?.report({ increment: 50 });
 
-    clearOutput();
-    sendToOutput(`instructions: ${instructions}`);
-    sendToOutput(`git diff prompt: ${prompt}`);
-    sendToOutput(`model: ${model}`);
-    sendToOutput(`temperature: ${WorkspaceService.getInstance().getTemp()}`);
-    sendToOutput(`max_tokens: ${WorkspaceService.getInstance().getMaxTokens()}`);
+    logger.clear();
+    logger.info("Gemini request", {
+      model,
+      temperature: WorkspaceService.getInstance().getTemp(),
+      maxTokens: WorkspaceService.getInstance().getMaxTokens(),
+    });
+    logger.trace("System instructions", instructions);
+    logger.trace("User prompt", prompt);
 
     let response: string | undefined;
     try {
@@ -118,11 +120,12 @@ class GeminiService implements AIService {
       });
 
       response = result.text;
-      sendToOutput(`result success: ${JSON.stringify(response)}`);
+      logger.info("Gemini response received");
+      logger.debug("Gemini full response", response);
       progress?.report({ increment: 49 });
     } catch (reason: unknown) {
+      logger.error("Gemini request failed", reason);
       console.error(reason);
-      sendToOutput(`result failed: ${JSON.stringify(reason)}`);
 
       const hasResponse = (
         err: unknown,

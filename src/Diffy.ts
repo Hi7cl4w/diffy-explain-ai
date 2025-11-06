@@ -10,7 +10,7 @@ import OpenAiService from "./service/OpenAiService";
 import VsCodeLlmService from "./service/VsCodeLlmService";
 import WindowService from "./service/WindowService";
 import WorkspaceService from "./service/WorkspaceService";
-import { sendToOutput } from "./utils/log";
+import { logger } from "./utils/log";
 
 class Diffy extends BaseDiffy {
   static _instance: Diffy;
@@ -42,7 +42,7 @@ class Diffy extends BaseDiffy {
       this.onWorkSpaceChanged();
     });
     this.isEnabled = true;
-    sendToOutput("initiated");
+    logger.info("Diffy extension initialized");
   }
 
   /**
@@ -128,7 +128,7 @@ class Diffy extends BaseDiffy {
       const codebaseContext = await this.getCodebaseIndexService().getCodebaseContext();
 
       if (codebaseContext) {
-        sendToOutput(`Adding codebase context (${strategy} mode) to prompt`);
+        logger.info("Adding codebase context to prompt", { strategy });
 
         // If using structured mode, also analyze the diff
         if (strategy === "structured") {
@@ -143,7 +143,7 @@ class Diffy extends BaseDiffy {
         return `${codebaseContext}\n\nDIFF:\n${diff}`;
       }
     } catch (error) {
-      sendToOutput(`Error getting codebase context: ${error}`);
+      logger.error("Error getting codebase context", error);
     }
 
     return diff;

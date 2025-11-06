@@ -1,6 +1,6 @@
 import { countTokens } from "gpt-tokenizer";
 import * as vscode from "vscode";
-import { sendToOutput } from "../utils/log";
+import { logger } from "../utils/log";
 import WorkspaceService from "./WorkspaceService";
 
 interface IndexedFileContent {
@@ -286,7 +286,7 @@ export default class CodebaseIndexService {
 
     const workspaceFolder = workspaceService.getCurrentWorkspace();
     if (!workspaceFolder) {
-      sendToOutput("No workspace folder found for codebase indexing");
+      logger.info("No workspace folder found for codebase indexing");
       return null;
     }
 
@@ -298,19 +298,17 @@ export default class CodebaseIndexService {
     // Auto-detect project files if indexedFiles is empty or includes "auto"
     if (!indexedFiles || indexedFiles.length === 0 || indexedFiles.includes("auto")) {
       const autoDetected = await this.autoDetectProjectFiles(workspaceFolder);
-      sendToOutput(
-        `Auto-detected ${autoDetected.length} project files: ${autoDetected.join(", ")}`,
-      );
+      logger.info(`Auto-detected ${autoDetected.length} project files: ${autoDetected.join(", ")}`);
       indexedFiles = autoDetected;
     }
 
     if (indexedFiles.length === 0) {
-      sendToOutput("No files configured for indexing");
+      logger.info("No files configured for indexing");
       return null;
     }
 
-    sendToOutput(`Starting smart codebase indexing with max file size: ${maxFileSizeKB}KB`);
-    sendToOutput(`Files to index: ${indexedFiles.join(", ")}`);
+    logger.info(`Starting smart codebase indexing with max file size: ${maxFileSizeKB}KB`);
+    logger.info(`Files to index: ${indexedFiles.join(", ")}`);
 
     const indexedContent: IndexedFileContent[] = [];
     let totalTokens = 0;
@@ -341,7 +339,7 @@ export default class CodebaseIndexService {
           if (cached && totalTokens + cached.tokens <= maxTotalTokens) {
             indexedContent.push(cached);
             totalTokens += cached.tokens;
-            sendToOutput(`Using cached ${filePattern}: ${cached.tokens} tokens`);
+            logger.info(`Using cached ${filePattern}: ${cached.tokens} tokens`);
             continue;
           }
         }
@@ -352,7 +350,7 @@ export default class CodebaseIndexService {
 
           // Skip if file is too large
           if (fileStat.size > maxFileSizeBytes) {
-            sendToOutput(
+            logger.info(
               `Skipping ${filePattern}: file size ${(fileStat.size / this.KB_TO_BYTES).toFixed(
                 1,
               )}KB exceeds limit of ${maxFileSizeKB}KB`,
@@ -372,7 +370,7 @@ export default class CodebaseIndexService {
 
           // Check if adding this file would exceed total token budget
           if (totalTokens + tokenCount > maxTotalTokens) {
-            sendToOutput(
+            logger.info(
               `Skipping ${filePattern}: would exceed total token budget (${
                 totalTokens + tokenCount
               } > ${maxTotalTokens})`,
@@ -391,18 +389,18 @@ export default class CodebaseIndexService {
           this.cache.set(filePattern, indexedItem);
 
           totalTokens += tokenCount;
-          sendToOutput(`Indexed ${filePattern}: ${tokenCount} tokens (analyzed)`);
+          logger.info(`Indexed ${filePattern}: ${tokenCount} tokens (analyzed)`);
         } catch {
           // File doesn't exist, skip silently
-          sendToOutput(`File not found: ${filePattern}`);
+          logger.info(`File not found: ${filePattern}`);
         }
       } catch (error) {
-        sendToOutput(`Error reading ${filePattern}: ${error}`);
+        logger.info(`Error reading ${filePattern}: ${error}`);
       }
     }
 
     if (indexedContent.length === 0) {
-      sendToOutput("No files were successfully indexed");
+      logger.info("No files were successfully indexed");
       return null;
     }
 
@@ -435,7 +433,11 @@ export default class CodebaseIndexService {
             strategy: "structured",
           },
         };
-        formattedContext = `CODEBASE CONTEXT (Structured):\n${JSON.stringify(structuredData, null, 2)}`;
+        formattedContext = `CODEBASE CONTEXT (Structured):\n${JSON.stringify(
+          structuredData,
+          null,
+          2,
+        )}`;
         break;
       }
 
@@ -447,7 +449,7 @@ export default class CodebaseIndexService {
           return `${item.file}: ${item.content} [${item.tokens} tokens]`;
         });
         formattedContext = `CODEBASE (AST-Enhanced):\n${astLines.join("\n")}`;
-        sendToOutput("AST-based indexing: Full implementation pending. Using enhanced format.");
+        logger.info("AST-based indexing: Full implementation pending. Using enhanced format.");
         break;
       }
 
@@ -455,7 +457,7 @@ export default class CodebaseIndexService {
         formattedContext = `PROJECT: ${indexedContent.map((i) => i.content).join(" • ")}`;
     }
 
-    sendToOutput(
+    logger.info(
       `Indexed [${strategy}]: ${indexedContent.length} files, ${totalTokens} tokens (${this.cache.size} cached)`,
     );
 
@@ -467,6 +469,6 @@ export default class CodebaseIndexService {
    */
   public clearCache(): void {
     this.cache.clear();
-    sendToOutput("Codebase index cache cleared");
+    logger.info("Codebase index cache cleared");
   }
 }

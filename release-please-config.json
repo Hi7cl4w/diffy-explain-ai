@@ -14,7 +14,6 @@
     { "type": "feature", "section": "✨ Features" },
     { "type": "fix", "section": "🐛 Bug Fixes" },
     { "type": "perf", "section": "⚡ Performance Improvements" },
-    { "type": "style", "section": "💅 Styles" },
     { "type": "refactor", "section": "♻️ Code Refactoring" },
     { "type": "test", "section": "✅ Tests" }
   ]

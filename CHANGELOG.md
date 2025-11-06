@@ -4,6 +4,13 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.5.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.1...diffy-explain-ai-v1.5.0) (2025-11-06)
+
+
+### ✨ Features
+
+* add Git staging event listeners and diff pre-warming ([228eb08](https://github.com/Hi7cl4w/diffy-explain-ai/commit/228eb08a0fec513bd91bca5557921ba8fbded049))
+
 ## [1.4.1](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.0...diffy-explain-ai-v1.4.1) (2025-11-06)
 
 

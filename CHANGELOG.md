@@ -4,6 +4,13 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.4.1](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.0...diffy-explain-ai-v1.4.1) (2025-11-06)
+
+
+### ⚡ Performance Improvements
+
+* improve performance with parallel processing, optimized caching, and pre-initialization ([a9a492e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/a9a492e95551c1a95303c29db9bfdc60e00ae215))
+
 ## [1.4.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.3.0...diffy-explain-ai-v1.4.0) (2025-11-06)
 
 

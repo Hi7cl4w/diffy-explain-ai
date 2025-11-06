@@ -1,6 +1,6 @@
 {
   "name": "diffy-explain-ai",
-  "displayName": "Diffy Commit AI - Generate Your Commit Message",
+  "displayName": "Diffy - AI Commit Messages with Context",
   "description": "Generate Commit Message for You or Explains The Changed Code Using Git Diff And OpenAi In Natural Language",
   "version": "1.3.0",
   "publisher": "hitclaw",

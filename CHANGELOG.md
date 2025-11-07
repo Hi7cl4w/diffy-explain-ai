@@ -4,6 +4,20 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.6.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.5.0...diffy-explain-ai-v1.6.0) (2025-11-07)
+
+
+### ✨ Features
+
+* **diffy:** add configurable large diff threshold ([324d811](https://github.com/Hi7cl4w/diffy-explain-ai/commit/324d811a10ae78fcd6e2942d9fe3deec68f4b810))
+* **git:** add silent option to getDiffAndWarnUser method ([4edc49a](https://github.com/Hi7cl4w/diffy-explain-ai/commit/4edc49a486782a97e230cc36adb8af86d48b82f0))
+
+
+### 🐛 Bug Fixes
+
+* **git:** do not warn message on updateStagedChanges ([6f3813d](https://github.com/Hi7cl4w/diffy-explain-ai/commit/6f3813d9f173e044f74802d41d80f50cc2fa550f))
+* remove unused imports and organize imports ([48975ce](https://github.com/Hi7cl4w/diffy-explain-ai/commit/48975ce595130c238023f43301f43a27c3a78574))
+
 ## [1.5.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.1...diffy-explain-ai-v1.5.0) (2025-11-06)
 
 

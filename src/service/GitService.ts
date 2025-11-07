@@ -3,6 +3,7 @@ import { type Extension, extensions, window } from "vscode";
 import type { API as GitApi, GitExtension, Repository } from "../@types/git";
 import { CONSTANTS } from "../Constants";
 import WorkspaceService from "./WorkspaceService";
+import { logger } from "../utils/log";
 
 class GitService {
   static _instance: GitService;
@@ -96,23 +97,27 @@ class GitService {
     window.showInformationMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 
-  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean) {
+  async getDiff(repo: Repository, cached = true, nameOnly?: boolean): Promise<string> {
     const diff = await this.getGitDiff(repo, cached, nameOnly);
     if (!diff) {
       if (cached) {
         const diffUncached = await repo.diff(false);
         if (diffUncached) {
-          this.showInformationMessage("warning: please stage your git changes");
+          throw new Error("Warning: please stage your git changes");
         } else {
-          this.showInformationMessage("No Changes");
+          throw new Error("No Changes");
         }
-        return null;
       }
-      this.showInformationMessage("No changes");
+      throw new Error("No changes");
     }
     return diff;
   }
-
+  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean) {
+    return this.getDiff(repo, cached, nameOnly).catch((error) => {
+      this.showInformationMessage(error.message);
+      return null;
+    });
+  }
   /**
    * Check if a file path matches any of the exclusion patterns
    * @param filePath - The file path to check
@@ -252,7 +257,7 @@ class GitService {
 
         return gitExtension.getAPI(1);
       }
-    } catch {}
+    } catch { }
 
     return undefined;
   }

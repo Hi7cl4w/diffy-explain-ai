@@ -628,7 +628,7 @@ class Diffy extends BaseDiffy {
       }
 
       // Get current staged diff in background
-      const diff = await this.gitService?.getDiffAndWarnUser(repo, false);
+      const diff = await this.gitService?.getDiff(repo, false).catch((_) => null);
       if (!diff) {
         return;
       }

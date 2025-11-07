@@ -96,26 +96,26 @@ class GitService {
     window.showInformationMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 
-  async getDiff(repo: Repository, cached = true, nameOnly?: boolean): Promise<string> {
+  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean, silent = false) {
     const diff = await this.getGitDiff(repo, cached, nameOnly);
     if (!diff) {
       if (cached) {
         const diffUncached = await repo.diff(false);
         if (diffUncached) {
-          throw new Error("Warning: please stage your git changes");
+          if (!silent) {
+            this.showInformationMessage("warning: please stage your git changes");
+          }
         } else {
-          throw new Error("No Changes");
+          if (!silent) {
+            this.showInformationMessage("No Changes");
+          }
         }
       }
-      throw new Error("No changes");
+      if (!silent) {
+        this.showInformationMessage("No changes");
+      }
     }
     return diff;
-  }
-  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean) {
-    return this.getDiff(repo, cached, nameOnly).catch((error) => {
-      this.showInformationMessage(error.message);
-      return null;
-    });
   }
   /**
    * Check if a file path matches any of the exclusion patterns
@@ -128,7 +128,11 @@ class GitService {
       // Simple glob pattern matching
       if (pattern.includes("*")) {
         const regex = new RegExp(
-          `^${pattern.replace(/\\/g, "\\\\").replace(/\./g, "\\.").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+          `^${pattern
+            .replace(/\\/g, "\\\\")
+            .replace(/\./g, "\\.")
+            .replace(/\*/g, ".*")
+            .replace(/\?/g, ".")}$`,
         );
         if (regex.test(filePath)) {
           return true;

@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import type { API as GitApi, GitExtension, Repository } from "./@types/git";
+import type { GitExtension, Repository } from "./@types/git";
 import Diffy from "./Diffy";
 
 let app: Diffy | null = null;

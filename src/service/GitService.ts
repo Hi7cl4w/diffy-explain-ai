@@ -3,7 +3,6 @@ import { type Extension, extensions, window } from "vscode";
 import type { API as GitApi, GitExtension, Repository } from "../@types/git";
 import { CONSTANTS } from "../Constants";
 import WorkspaceService from "./WorkspaceService";
-import { logger } from "../utils/log";
 
 class GitService {
   static _instance: GitService;
@@ -257,7 +256,7 @@ class GitService {
 
         return gitExtension.getAPI(1);
       }
-    } catch { }
+    } catch {}
 
     return undefined;
   }

@@ -96,19 +96,25 @@ class GitService {
     window.showInformationMessage(`${CONSTANTS.extensionShortName}: ${msg}`);
   }
 
-  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean) {
+  async getDiffAndWarnUser(repo: Repository, cached = true, nameOnly?: boolean, silent = false) {
     const diff = await this.getGitDiff(repo, cached, nameOnly);
     if (!diff) {
       if (cached) {
         const diffUncached = await repo.diff(false);
         if (diffUncached) {
-          this.showInformationMessage("warning: please stage your git changes");
+          if (!silent) {
+            this.showInformationMessage("warning: please stage your git changes");
+          }
         } else {
-          this.showInformationMessage("No Changes");
+          if (!silent) {
+            this.showInformationMessage("No Changes");
+          }
         }
         return null;
       }
-      this.showInformationMessage("No changes");
+      if (!silent) {
+        this.showInformationMessage("No changes");
+      }
     }
     return diff;
   }
@@ -124,7 +130,11 @@ class GitService {
       // Simple glob pattern matching
       if (pattern.includes("*")) {
         const regex = new RegExp(
-          `^${pattern.replace(/\\/g, "\\\\").replace(/\./g, "\\.").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+          `^${pattern
+            .replace(/\\/g, "\\\\")
+            .replace(/\./g, "\\.")
+            .replace(/\*/g, ".*")
+            .replace(/\?/g, ".")}$`,
         );
         if (regex.test(filePath)) {
           return true;

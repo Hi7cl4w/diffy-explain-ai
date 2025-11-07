@@ -149,6 +149,14 @@ export default class WorkspaceService extends EventEmitter {
     return value;
   }
 
+  /**
+   * Threshold for switching to name-only diff mode for large diffs
+   */
+  getLargeDiffThreshold(): number {
+    const value = this.getConfiguration().get("largeDiffThreshold");
+    return typeof value === "number" && value > 0 ? value : 2100;
+  }
+
   getCommitMessageType() {
     const value = String(this.getConfiguration().get("commitMessageType"));
     return value || "conventional";

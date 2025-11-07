@@ -110,7 +110,6 @@ class GitService {
             this.showInformationMessage("No Changes");
           }
         }
-        return null;
       }
       if (!silent) {
         this.showInformationMessage("No changes");
@@ -118,7 +117,6 @@ class GitService {
     }
     return diff;
   }
-
   /**
    * Check if a file path matches any of the exclusion patterns
    * @param filePath - The file path to check

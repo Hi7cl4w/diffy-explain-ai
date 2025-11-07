@@ -205,7 +205,8 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    if (diff && diff.length >= 2100) {
+    const largeThreshold = this.workspaceService?.getLargeDiffThreshold?.() ?? 2100;
+    if (diff && diff.length >= largeThreshold) {
       nameOnly = true;
       diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
     }
@@ -302,7 +303,8 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    if (diff && diff.length >= 2100) {
+    const largeThreshold = this.workspaceService?.getLargeDiffThreshold?.() ?? 2100;
+    if (diff && diff.length >= largeThreshold) {
       nameOnly = true;
       diff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
     }
@@ -525,7 +527,8 @@ class Diffy extends BaseDiffy {
     if (!diff) {
       return;
     }
-    if (diff && diff.length >= 2100) {
+    const largeThreshold = this.workspaceService?.getLargeDiffThreshold?.() ?? 2100;
+    if (diff && diff.length >= largeThreshold) {
       nameOnly = true;
       const newDiff = await this.gitService?.getDiffAndWarnUser(repo, true, nameOnly);
       if (!newDiff) {

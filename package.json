@@ -199,6 +199,13 @@
             ".DS_Store"
           ]
         },
+        "diffy-explain-ai.largeDiffThreshold": {
+          "type": "number",
+          "order": 6.5,
+          "default": 2100,
+          "minimum": 500,
+          "markdownDescription": "Character length threshold to treat diffs as 'large'.\n\nWhen the diff text length is greater than or equal to this value, Diffy switches to name-only mode to reduce token usage.\n\n- **2100** *(Default)*: Balanced for most projects\n- Increase for more detailed diffs\n- Decrease for stricter token savings"
+        },
         "diffy-explain-ai.respectGitignore": {
           "type": "boolean",
           "order": 7,

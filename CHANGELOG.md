@@ -6,20 +6,17 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [1.6.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.5.0...diffy-explain-ai-v1.6.0) (2025-11-07)
 
-
 ### ✨ Features
 
 * **diffy:** add configurable large diff threshold ([324d811](https://github.com/Hi7cl4w/diffy-explain-ai/commit/324d811a10ae78fcd6e2942d9fe3deec68f4b810))
-* **git:** add silent option to getDiffAndWarnUser method ([4edc49a](https://github.com/Hi7cl4w/diffy-explain-ai/commit/4edc49a486782a97e230cc36adb8af86d48b82f0))
-
 
 ### 🐛 Bug Fixes
 
-* **git:** do not warn message on updateStagedChanges ([6f3813d](https://github.com/Hi7cl4w/diffy-explain-ai/commit/6f3813d9f173e044f74802d41d80f50cc2fa550f))
+* **git:** do not warn message on updateStagedChanges ([4edc49a](https://github.com/Hi7cl4w/diffy-explain-ai/commit/4edc49a486782a97e230cc36adb8af86d48b82f0))
+
 * remove unused imports and organize imports ([48975ce](https://github.com/Hi7cl4w/diffy-explain-ai/commit/48975ce595130c238023f43301f43a27c3a78574))
 
 ## [1.5.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.1...diffy-explain-ai-v1.5.0) (2025-11-06)
-
 
 ### ✨ Features
 
@@ -27,13 +24,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [1.4.1](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.0...diffy-explain-ai-v1.4.1) (2025-11-06)
 
-
 ### ⚡ Performance Improvements
 
 * improve performance with parallel processing, optimized caching, and pre-initialization ([a9a492e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/a9a492e95551c1a95303c29db9bfdc60e00ae215))
 
 ## [1.4.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.3.0...diffy-explain-ai-v1.4.0) (2025-11-06)
-
 
 ### ✨ Features
 
@@ -42,19 +37,16 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * **indexing:** implement multi-strategy codebase indexing ([7210f9e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/7210f9e67ac759605a80e6a995b66796beab8859))
 * **service:** add DiffAnalyzer for analyzing git diffs ([dcb188e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/dcb188edcef78ad17b7216b8e6522f0849a9a6ec))
 
-
 ### ♻️ Code Refactoring
 
 * **logging:** replace sendToOutput with structured logger ([b03fdde](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b03fddef78ab14616e7c538f98406da3544a8f03))
 
 ## [1.3.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.2.1...diffy-explain-ai-v1.3.0) (2025-11-04)
 
-
 ### ✨ Features
 
 * add codebase indexing service and improve configuration handling ([b53f132](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b53f1325e2b243d6aab8fc6b9294ac5bac06fed5))
 * add support for Grok Code Fast 1 and GPT-5 mini Copilot models ([869eb03](https://github.com/Hi7cl4w/diffy-explain-ai/commit/869eb036770344a00b3babf30b44ebfd8f30c4cc))
-
 
 ### 📝 Documentation
 
@@ -62,11 +54,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * enhance README with comprehensive features, installation, and configuration details ([cce7142](https://github.com/Hi7cl4w/diffy-explain-ai/commit/cce7142bb2337f8864407e76d5f5d32eb82bcb35))
 * update README with new Copilot models and codebase indexing features ([f1dfca5](https://github.com/Hi7cl4w/diffy-explain-ai/commit/f1dfca5bffd3c997a0766d2bf8952573eee5987c))
 
-
 ### 💅 Styles
 
 * apply code formatting and linting fixes ([4d73066](https://github.com/Hi7cl4w/diffy-explain-ai/commit/4d730665a8d21e72415a88858e566388b4219ac9))
-
 
 ### 🔧 Continuous Integration
 

@@ -4,6 +4,72 @@ All notable changes to the "diffy-explain-ai" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [1.6.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/v1.5.0...v1.6.0) (2025-11-07)
+
+
+### Features
+
+* Add 'DIFFY: Explain and Preview' command to package.json ([b214edd](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b214eddb59780fac56d535304a6ce340ef018c1d))
+* Add 'ExtensionContext' to Diffy class ([f2ad4b1](https://github.com/Hi7cl4w/diffy-explain-ai/commit/f2ad4b10ff2f05148ff6b37e696e3069932d3d35))
+* Add 'No Changes' message ([82b3968](https://github.com/Hi7cl4w/diffy-explain-ai/commit/82b39686da0fb4f3307a7bb530ecefa13b283a04))
+* Add automated GitHub release workflow with comprehensive documentation ([dbfafb7](https://github.com/Hi7cl4w/diffy-explain-ai/commit/dbfafb7f7d5db4c96daaf6455fdb7a4c9b998518))
+* Add Biome as project linter and formatter ([a01ce71](https://github.com/Hi7cl4w/diffy-explain-ai/commit/a01ce7167bc87d4690ef2ad18cd772c18cb16a31))
+* add Biome as the project linter and formatter ([0ecdc62](https://github.com/Hi7cl4w/diffy-explain-ai/commit/0ecdc626d884290abc7558f97006ceec0fe629e9))
+* add codebase indexing service and improve configuration handling ([b53f132](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b53f1325e2b243d6aab8fc6b9294ac5bac06fed5))
+* Add custom commit message template support with placeholders ([5ac67c0](https://github.com/Hi7cl4w/diffy-explain-ai/commit/5ac67c0d9a6a8377d3ef51bebfb2a52cb76e01a1))
+* add Gemini configuration methods to WorkspaceService ([55cb2fa](https://github.com/Hi7cl4w/diffy-explain-ai/commit/55cb2faa886646e84255a52284583479ae5e96fd))
+* add Git staging event listeners and diff pre-warming ([228eb08](https://github.com/Hi7cl4w/diffy-explain-ai/commit/228eb08a0fec513bd91bca5557921ba8fbded049))
+* add Google Gemini API dependency ([9dbc802](https://github.com/Hi7cl4w/diffy-explain-ai/commit/9dbc802cf62440e73072a2d697d7724454605181))
+* add intelligent code indexing for AI commit generation ([b2f2393](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b2f2393980b94809ea40c73c5538dae85bb96b14))
+* add support for Grok Code Fast 1 and GPT-5 mini Copilot models ([869eb03](https://github.com/Hi7cl4w/diffy-explain-ai/commit/869eb036770344a00b3babf30b44ebfd8f30c4cc))
+* add type-check script and update VS Code engine requirement ([ae582b8](https://github.com/Hi7cl4w/diffy-explain-ai/commit/ae582b876dc91f9db4115a3060fba7d456d52d8a))
+* Add VS Code Language Model API integration ([87e0b20](https://github.com/Hi7cl4w/diffy-explain-ai/commit/87e0b200bdc0af4892c9775e1208233d77f907bc))
+* Add VS Code Language Model API integration and Biome linting ([5bca5d6](https://github.com/Hi7cl4w/diffy-explain-ai/commit/5bca5d6cb653a175042539a0ce1e9dd275d66673))
+* Add VS Code Language Model API integration and Biome linting ([98fbeb4](https://github.com/Hi7cl4w/diffy-explain-ai/commit/98fbeb441a61804fb4e7f2edcd1b258a5969e659))
+* Added getDiffAndWarnUser() to GitService ([daee4a0](https://github.com/Hi7cl4w/diffy-explain-ai/commit/daee4a0746219c438c4549dfec0ab6f96ca9a7f6))
+* Changed the getGitDiff call to the getDiffAndWarnUser call ([0db05e1](https://github.com/Hi7cl4w/diffy-explain-ai/commit/0db05e1f5d9da949858a27cce0c2889bce18b37a))
+* **config:** add codebase indexing strategy setting ([8f27ee7](https://github.com/Hi7cl4w/diffy-explain-ai/commit/8f27ee7f5c6eb801fab8237180a3e20ea8471733))
+* Create WindowService class ([624d459](https://github.com/Hi7cl4w/diffy-explain-ai/commit/624d4592838b734de15ef18f8b802b93e5243797))
+* **diff:** integrate DiffAnalyzer with structured mode ([d15fa30](https://github.com/Hi7cl4w/diffy-explain-ai/commit/d15fa30389ed27457a7c6cd9ff555fa8c0cfe4a4))
+* **diffy:** add configurable large diff threshold ([324d811](https://github.com/Hi7cl4w/diffy-explain-ai/commit/324d811a10ae78fcd6e2942d9fe3deec68f4b810))
+* Explain and Preview Changes of Staged Files ([bfc9108](https://github.com/Hi7cl4w/diffy-explain-ai/commit/bfc9108101801856c4feca9c0b1014800f1899b9))
+* explainAndPreview() ([1b29733](https://github.com/Hi7cl4w/diffy-explain-ai/commit/1b2973373976b00937f06c37be066f1e127eb631))
+* **git:** add silent option to getDiffAndWarnUser method ([4edc49a](https://github.com/Hi7cl4w/diffy-explain-ai/commit/4edc49a486782a97e230cc36adb8af86d48b82f0))
+* implement GeminiService for Google Gemini API integration ([5c6b9cc](https://github.com/Hi7cl4w/diffy-explain-ai/commit/5c6b9cca879e7b9e4820938bfeab63653e8e2bf2))
+* **indexing:** implement multi-strategy codebase indexing ([7210f9e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/7210f9e67ac759605a80e6a995b66796beab8859))
+* integrate GeminiService into Diffy extension ([80e3af9](https://github.com/Hi7cl4w/diffy-explain-ai/commit/80e3af92c869298b8753e7d9caae00368e231948))
+* **package.json:** update version to 1.0.15 ([95a50ae](https://github.com/Hi7cl4w/diffy-explain-ai/commit/95a50ae27d0cb1ab2ff0f84bb75384f7613e34ca))
+* **service:** add DiffAnalyzer for analyzing git diffs ([dcb188e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/dcb188edcef78ad17b7216b8e6522f0849a9a6ec))
+* Set VS Code LLM (GitHub Copilot) as default AI provider ([b353a87](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b353a87efb514c1c0602cbe22c0ce901cd7d630f))
+* Update OpenAI Service to ([bfdf59d](https://github.com/Hi7cl4w/diffy-explain-ai/commit/bfdf59dc9c506eecd8b84fd85e8d5f01f8a20d50))
+* warn user to stage ([0355228](https://github.com/Hi7cl4w/diffy-explain-ai/commit/0355228795f40593b31317753a15119c67e10112))
+
+
+### Bug Fixes
+
+* Add logic to return null on OpenAiService error ([e45c5eb](https://github.com/Hi7cl4w/diffy-explain-ai/commit/e45c5eb4be0766028f56134c0e98cdc64d36a864))
+* Added conditional statement to check for changes ([b6e9faa](https://github.com/Hi7cl4w/diffy-explain-ai/commit/b6e9faaac4c7903a74465dd9bf9f27e9ae593214))
+* commit message generation improved ([506b424](https://github.com/Hi7cl4w/diffy-explain-ai/commit/506b424b4d09e3b2555a272c6c302bd685161daa))
+* Ensure Promise rejection reasons are Error objects ([dc48f8a](https://github.com/Hi7cl4w/diffy-explain-ai/commit/dc48f8a86360fd752f0226be20940faac6aa45f0))
+* getExplainedChanges Returns string or null ([de80941](https://github.com/Hi7cl4w/diffy-explain-ai/commit/de80941e3de61bcad747c8e4d1d662813693232d))
+* **git:** do not warn message on updateStagedChanges ([6f3813d](https://github.com/Hi7cl4w/diffy-explain-ai/commit/6f3813d9f173e044f74802d41d80f50cc2fa550f))
+* Handle git repositories with submodules correctly ([0674002](https://github.com/Hi7cl4w/diffy-explain-ai/commit/0674002bd4d0a36c171ff25bb145e4c3a0ca5694))
+* Handle git repositories with submodules correctly ([de66bfe](https://github.com/Hi7cl4w/diffy-explain-ai/commit/de66bfe302f03079b3dccde065b25ad8739e48c2)), closes [#14](https://github.com/Hi7cl4w/diffy-explain-ai/issues/14)
+* OpenAI error handling ([e849178](https://github.com/Hi7cl4w/diffy-explain-ai/commit/e849178392a22f11bdc57aeda4b8d60a794fe330))
+* Properly handle promises to prevent unhandled rejections ([7a47650](https://github.com/Hi7cl4w/diffy-explain-ai/commit/7a4765059d4302698495b546119216d9828f4d8f))
+* remove unused imports and organize imports ([48975ce](https://github.com/Hi7cl4w/diffy-explain-ai/commit/48975ce595130c238023f43301f43a27c3a78574))
+* Resolve TypeScript issues in test suite ([c5addb0](https://github.com/Hi7cl4w/diffy-explain-ai/commit/c5addb0a430b5a76df40b6fdd6bf6fd9874cd097))
+* Update type definitions for better type safety ([774cbf2](https://github.com/Hi7cl4w/diffy-explain-ai/commit/774cbf205ac6a5dde8567dc9179efb7a82c39cf3))
+* Update VS Code API usage for compatibility with v1.90.0 ([c44a740](https://github.com/Hi7cl4w/diffy-explain-ai/commit/c44a74091caafa45f62d9d2a3a98ec86450a16ac))
+* warning not shown when there is no changes ([1f31528](https://github.com/Hi7cl4w/diffy-explain-ai/commit/1f3152881fcd9c51645f7149485465d046d8225e))
+* warning not shown when there is no changes ([c07ca89](https://github.com/Hi7cl4w/diffy-explain-ai/commit/c07ca89022038c75b21c33e71314c42a6f77f55b))
+* windows is not updating after first call ([aea8186](https://github.com/Hi7cl4w/diffy-explain-ai/commit/aea81865c57d0e3ca787ca0cad0723eb5c3c4ed6))
+
+
+### Performance Improvements
+
+* improve performance with parallel processing, optimized caching, and pre-initialization ([a9a492e](https://github.com/Hi7cl4w/diffy-explain-ai/commit/a9a492e95551c1a95303c29db9bfdc60e00ae215))
+
 ## [1.5.0](https://github.com/Hi7cl4w/diffy-explain-ai/compare/diffy-explain-ai-v1.4.1...diffy-explain-ai-v1.5.0) (2025-11-06)
 
 

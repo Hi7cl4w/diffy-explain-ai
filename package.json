@@ -368,7 +368,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^22.19.0",
     "@types/vscode": "^1.105.0",
-    "@vscode/test-electron": "^2.2.0",
+    "@vscode/test-electron": "^2.5.2",
     "glob": "^8.0.3",
     "mocha": "^10.8.2",
     "ts-loader": "^9.4.1",

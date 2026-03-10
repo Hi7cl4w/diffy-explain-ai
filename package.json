@@ -383,6 +383,6 @@
     "axios-retry": "^3.5.0",
     "gpt-tokenizer": "^2.6.1",
     "openai": "^4.7.0",
-    "simple-git": "^3.16.0"
+    "simple-git": "^3.32.3"
   }
 }

@@ -379,7 +379,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.28.0",
-    "axios": "^1.13.5",
+    "axios": "^1.15.0",
     "axios-retry": "^3.5.0",
     "gpt-tokenizer": "^2.6.1",
     "openai": "^4.7.0",
